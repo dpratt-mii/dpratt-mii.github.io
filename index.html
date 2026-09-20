@@ -4,50 +4,81 @@
 <meta charset="UTF-8">
 <title>OurBGG</title>
 <style>
-  body { font-family: Segoe UI, Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+  body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
   header { padding: 12px 16px; background: #2b2f38; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   header h1 { margin: 0; font-size: 18px; }
   .view-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; }
   .view-toggle label { font-weight: 600; }
   .view-toggle select { padding: 6px 10px; border-radius: 4px; border: 1px solid #d0d7de; font-size: 13px; }
+  .thumbnail-toggle { display: inline-flex; align-items: center; gap: 5px; color: #fff; cursor: pointer; }
+  .thumbnail-toggle input { width: 16px; height: 16px; margin: 0; accent-color: #fff; }
   #status { padding: 8px 16px; font-size: 13px; color: #444; }
+  body.collection-view { background: #fff; }
+  body.collection-view > header { background: #403b68; min-height: 42px; box-sizing: border-box; padding: 7px 16px; }
+  body.collection-view > header h1,
+  body.collection-view > header .view-toggle label { color: #fff; }
+  body.collection-view > header h1 { font-size: 16px; }
+  body.collection-view > header .view-toggle select { padding: 4px 8px; }
+  body.collection-view #status {
+    box-sizing: border-box;
+    margin: 0 0 4px;
+    padding: 8px 16px;
+    min-height: 34px;
+    background: #403b68;
+    color: #fff;
+    font-size: 16px;
+    text-align: right;
+  }
   .view-collection-table thead th {
-    background: #ffffff;
-    color: #1d5fb3;
-    border-color: #cfd6de;
-    font-size: 13px;
+    background: #fff;
+    color: #075bbb;
+    border-color: #cfd4da;
+    font-size: 22px;
     font-weight: 700;
     text-align: center;
     white-space: normal;
+    line-height: 1.15;
+    padding: 7px 8px;
   }
   .view-collection-table tbody td {
-    padding: 10px 8px;
+    height: 108px;
+    box-sizing: border-box;
+    padding: 12px 8px;
     vertical-align: top;
     background: #fff;
-    color: #2c2c2c;
-  }
-  .view-collection-table tbody tr:nth-child(even) td { background: #f8f8f8; }
-  .view-collection-table tbody td.title-cell {
-    color: #1d5fb3;
+    color: #111;
+    border-color: #cfd4da;
     font-size: 18px;
+  }
+  .view-collection-table tbody tr:nth-child(even) td { background: #fff; }
+  .view-collection-table tbody td.title-cell {
+    color: #075bbb;
+    font-size: 21px;
     line-height: 1.2;
     font-weight: 500;
     white-space: normal;
+    cursor: pointer;
   }
+  .view-collection-table tbody td.title-cell:hover,
+  .view-collection-table tbody td.title-cell:focus { text-decoration: underline; }
+  td.dialog-trigger { color: #075bbb; cursor: pointer; }
+  td.dialog-trigger:hover, td.dialog-trigger:focus { text-decoration: underline; }
+  .bgg-id-link { color: #075bbb; }
   .view-collection-table tbody td.rating-cell,
   .view-collection-table tbody td.status-cell,
   .view-collection-table tbody td.plays-cell { text-align: center; }
-  .view-collection-table tbody td.status-cell { font-weight: 600; }
-  .view-collection-table tbody td.status-cell.owned { color: #2a7a1b; }
-  .view-collection-table tbody td.status-cell.prev-owned { color: #5d4ca0; }
+  .view-collection-table tbody td.status-cell { font-weight: 400; }
+  .view-collection-table tbody td.status-cell.owned { color: #111; }
+  .view-collection-table tbody td.status-cell.prev-owned { color: #14149b; }
   .view-collection-table tbody td.comment-cell {
     white-space: pre-line;
-    min-width: 260px;
-    font-size: 13px;
+    min-width: 360px;
+    font-size: 18px;
     line-height: 1.3;
   }
   #status.error { color: #b00020; font-weight: bold; }
   .table-wrap { overflow: auto; max-height: calc(100vh - 90px); margin: 0 16px 16px; border: 1px solid #ccc; }
+  body.collection-view .table-wrap { margin: 0 30px 16px; border: 0; }
   table { border-collapse: collapse; font-size: 12px; white-space: nowrap; table-layout: fixed; }
   th, td { border: 1px solid #ddd; padding: 4px 8px; text-align: left; overflow: hidden; text-overflow: ellipsis; }
   thead th { position: sticky; top: 0; background: #2b2f38; color: #fff; z-index: 2; }
@@ -61,8 +92,186 @@
   .col-label::after { content: ''; display: inline-block; width: 10px; }
   th.sort-asc .col-label::after { content: '\25b2'; }
   th.sort-desc .col-label::after { content: '\25bc'; }
+  th.status-filter-header { overflow: visible; }
+  .status-filter-button {
+    display: inline-grid;
+    width: 24px;
+    height: 24px;
+    margin-left: 5px;
+    padding: 3px;
+    place-items: center;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    cursor: pointer;
+    vertical-align: middle;
+  }
+  .status-filter-button:hover,
+  .status-filter-button:focus { background: #e7effb; outline: 1px solid #075bbb; }
+  .status-filter-icon {
+    display: block;
+    width: 15px;
+    height: 15px;
+    background: #075bbb;
+    clip-path: polygon(0 0, 100% 0, 63% 45%, 63% 100%, 37% 100%, 37% 45%);
+  }
+  .status-filter-menu {
+    position: absolute;
+    top: calc(100% - 1px);
+    right: 8px;
+    z-index: 5;
+    display: grid;
+    min-width: 180px;
+    padding: 8px;
+    border: 1px solid #b9c2ce;
+    border-radius: 3px;
+    background: #fff;
+    box-shadow: 0 5px 14px rgba(0, 0, 0, .2);
+    color: #111;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: left;
+  }
+  .status-filter-option { display: flex; align-items: center; gap: 7px; padding: 5px 4px; white-space: nowrap; }
+  .status-filter-option input { width: 15px; height: 15px; margin: 0; }
   #filterRow th { top: 27px; padding: 2px 4px; }
   #filterRow input { width: 100%; box-sizing: border-box; font-size: 12px; padding: 2px 4px; }
+  body.collection-view #filterRow { display: none; }
+  body.collection-view .view-collection-table { table-layout: fixed; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(1) { width: 225px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(2) { width: 120px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(3) { width: 120px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(4) { width: 111px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(5) { width: 120px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(6) { width: 190px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(7) { width: 120px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(8) { width: 390px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(1) { width: 125px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(2) { width: 225px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(3) { width: 120px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(4) { width: 120px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(5) { width: 111px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(6) { width: 120px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(7) { width: 190px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(8) { width: 120px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(9) { width: 390px !important; }
+  .thumbnail-cell { padding: 8px !important; text-align: center; vertical-align: middle !important; }
+  .collection-thumbnail { display: block; width: 100px; height: 120px; margin: 0 auto; object-fit: cover; }
+  #gameDialog {
+    width: min(1100px, calc(100vw - 48px));
+    max-width: 1100px;
+    padding: 0;
+    border: 0;
+    color: #f7f7fb;
+    background: #08080e;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, .65);
+  }
+  #gameDialog::backdrop { background: rgba(1, 1, 6, .82); }
+  .game-dialog-shell {
+    position: relative;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 52px;
+    min-height: 620px;
+    padding: 22px 28px 28px;
+    overflow: hidden;
+    background: #08080e;
+  }
+  .game-dialog-shell::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 0 35%;
+    background: linear-gradient(90deg, #08080e 0%, rgba(8, 8, 14, .88) 25%, rgba(8, 8, 14, .48) 100%);
+    pointer-events: none;
+  }
+  .game-cover-panel,
+  .game-dialog-content { position: relative; z-index: 1; }
+  .game-cover-panel { display: flex; flex-direction: column; align-items: center; gap: 28px; }
+  .game-cover {
+    display: block;
+    width: 310px;
+    max-width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    background: #20202b;
+  }
+  .collection-badge {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 18px;
+    border: 0;
+    border-radius: 7px;
+    color: #111;
+    background: #f4f4f6;
+    font-size: 20px;
+    font-weight: 700;
+    text-align: left;
+  }
+  .collection-badge::before { content: '\2713'; margin-right: 8px; color: #27c982; }
+  .game-dialog-content { padding-top: 5px; }
+  .dialog-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    z-index: 2;
+    border: 0;
+    color: #fff;
+    background: transparent;
+    font-size: 32px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .game-ranks { display: flex; gap: 24px; margin: 0 0 42px; color: #f3f3f7; font-size: 18px; }
+  .game-ranks span:first-child::first-letter { color: #ff5a18; }
+  .game-ranks strong { margin-left: 5px; border-bottom: 1px dotted #aaa; font-weight: 400; }
+  .game-title-row { display: flex; align-items: center; gap: 24px; }
+  .game-rating-stack { display: flex; flex: 0 0 84px; flex-direction: column; align-items: center; gap: 5px; }
+  .game-rating-badge {
+    display: grid;
+    width: 84px;
+    height: 84px;
+    place-items: center;
+    color: #fff;
+    background: #536cae;
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+    font-size: 31px;
+    font-weight: 700;
+  }
+  .game-geek-rating-label { color: #ddd; font-size: 13px; font-weight: 700; }
+  .game-geek-rating-value { color: #fff; font-size: 16px; }
+  .game-title-row h2 { margin: 0; color: #fff; font-size: clamp(24px, 3vw, 38px); line-height: 1.15; }
+  .game-year { margin: 12px 0 12px 110px; font-size: 26px; font-weight: 700; }
+  .game-description { margin: 0 0 28px 110px; font-size: 23px; line-height: 1.35; }
+  .game-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin: 0 0 22px;
+    border-top: 1px solid #30303a;
+    border-bottom: 1px solid #30303a;
+  }
+  .game-stat { min-width: 0; padding: 18px 14px 16px 0; border-right: 1px solid #30303a; }
+  .game-stat + .game-stat { padding-left: 18px; }
+  .game-stat:last-child { border-right: 0; }
+  .game-stat strong { display: block; font-size: 24px; }
+  .game-stat span { display: block; margin-top: 8px; color: #ddd; font-size: 16px; }
+  .game-stat em { color: #2bd485; font-style: normal; }
+  .game-metadata { display: grid; gap: 12px; color: #eee; font-size: 19px; line-height: 1.35; }
+  .game-metadata strong { margin-right: 8px; }
+  .dialog-play-button { margin-top: 22px; padding: 10px 18px; border: 0; border-radius: 6px; font-size: 18px; font-weight: 700; cursor: pointer; }
+  @media (max-width: 760px) {
+    .game-dialog-shell { grid-template-columns: 1fr; gap: 22px; min-height: 0; padding: 18px; }
+    .game-cover-panel { align-items: stretch; }
+    .game-cover { width: min(240px, 70vw); margin: 0 auto; }
+    .game-ranks { flex-wrap: wrap; margin-bottom: 22px; }
+    .game-title-row { align-items: flex-start; gap: 12px; }
+    .game-rating-stack { flex-basis: 66px; }
+    .game-rating-badge { width: 66px; height: 66px; font-size: 24px; }
+    .game-title-row h2 { font-size: 26px; }
+    .game-year, .game-description { margin-left: 78px; }
+    .game-description { font-size: 18px; }
+    .game-stats { grid-template-columns: repeat(2, 1fr); }
+    .game-stat:nth-child(2) { border-right: 0; }
+  }
 </style>
 </head>
 <body>
@@ -73,8 +282,11 @@
     <select id="viewSelect" aria-label="View">
       <option value="collection" selected>Collection View</option>
       <option value="detailed">Detailed View</option>
-      <option value="bgg">BGG View</option>
     </select>
+    <label class="thumbnail-toggle" for="thumbnailToggle">
+      <input id="thumbnailToggle" type="checkbox" aria-label="Thumbnail">
+      Thumbnail
+    </label>
   </div>
 </header>
 <div id="status">Loading data from collection.csv&hellip;</div>
@@ -88,6 +300,43 @@
     <tbody id="bodyRows"></tbody>
   </table>
 </div>
+<dialog id="gameDialog" aria-labelledby="dialogGameTitle">
+  <div class="game-dialog-shell">
+    <button class="dialog-close" id="dialogClose" type="button" aria-label="Close game details">&times;</button>
+    <div class="game-cover-panel">
+      <img class="game-cover" id="dialogCover" alt="">
+      <div class="collection-badge" id="dialogCollectionStatus">In Collection</div>
+      <button class="dialog-play-button" type="button" id="dialogPlayButton">Log Play</button>
+    </div>
+    <div class="game-dialog-content">
+      <div class="game-ranks">
+        <span>&#9819; RANK: OVERALL <strong id="dialogOverallRank">N/A</strong></span>
+        <span>FAMILY <strong id="dialogFamilyRank">N/A</strong></span>
+      </div>
+      <div class="game-title-row">
+        <div class="game-rating-stack">
+          <div class="game-rating-badge" id="dialogRating">N/A</div>
+          <div class="game-geek-rating-label">Geek Rating</div>
+          <div class="game-geek-rating-value" id="dialogGeekRating">N/A</div>
+        </div>
+        <h2 id="dialogGameTitle"></h2>
+      </div>
+      <div class="game-year" id="dialogYear"></div>
+      <p class="game-description" id="dialogDescription"></p>
+      <div class="game-stats">
+        <div class="game-stat"><strong id="dialogPlayers">N/A</strong><span>Players</span></div>
+        <div class="game-stat"><strong id="dialogPlayTime">N/A</strong><span>Playing Time</span></div>
+        <div class="game-stat"><strong id="dialogAge">N/A</strong><span>Age</span></div>
+        <div class="game-stat"><strong><em id="dialogWeight">N/A</em> / 5</strong><span>Complexity Rating</span></div>
+      </div>
+      <div class="game-metadata">
+        <div><strong>Collection:</strong> <span id="dialogStatus"></span></div>
+        <div><strong>Your Rating:</strong> <span id="dialogYourRating"></span></div>
+        <div><strong>Your Plays:</strong> <span id="dialogYourPlays"></span></div>
+      </div>
+    </div>
+  </div>
+</dialog>
 
 <script>
 // Column list mirrors every column (A-AO) of the "Games" sheet in Games.xlsx, in order.
@@ -152,7 +401,6 @@ const BGG_COLUMNS = [
 
 const COLLECTION_COLUMNS = [
   { header: 'Title',        field: 'game_name' },
-  { header: 'Version',      field: null },
   { header: 'Geek Rating',  field: 'bgg_rating' },
   { header: 'Your Rating',  field: 'rating' },
   { header: 'Status',       field: 'status' },
@@ -160,13 +408,30 @@ const COLLECTION_COLUMNS = [
   { header: 'Comment',      field: 'comment' }
 ];
 
+const ADDITIONAL_COLUMNS = [];
+const THUMBNAIL_COLUMN = { header: '', field: 'collectiondetails2026.thumbnail' };
+const VALUE3_FIELD = 'collectiondetails2026.value3';
+const RANK_ID_FIELD = 'boardgames_ranks.id';
+
 let activeView = 'collection';
+let thumbnailEnabled = false;
 const WRAP_FIELDS = new Set(['description', 'categories', 'mechanics', 'alternate_names', 'families', 'publishers']);
 
 function getActiveColumns() {
-  if (activeView === 'bgg') return BGG_COLUMNS;
-  if (activeView === 'collection') return COLLECTION_COLUMNS;
-  return COLUMNS;
+  const columns = activeView === 'collection' ? COLLECTION_COLUMNS : COLUMNS;
+  const activeColumns = columns.concat(ADDITIONAL_COLUMNS);
+  if (activeView !== 'collection') {
+    return thumbnailEnabled ? [THUMBNAIL_COLUMN, ...activeColumns] : activeColumns;
+  }
+  const value3Column = ADDITIONAL_COLUMNS.find(column => column.field === VALUE3_FIELD);
+  const rankIdColumn = ADDITIONAL_COLUMNS.find(column => column.field === RANK_ID_FIELD);
+  const remainingAdditionalColumns = ADDITIONAL_COLUMNS.filter(column =>
+    column.field !== VALUE3_FIELD && column.field !== RANK_ID_FIELD
+  );
+  const collectionColumns = rankIdColumn && value3Column
+    ? [COLLECTION_COLUMNS[0], rankIdColumn, value3Column, ...COLLECTION_COLUMNS.slice(1), ...remainingAdditionalColumns]
+    : activeColumns;
+  return thumbnailEnabled ? [THUMBNAIL_COLUMN, ...collectionColumns] : collectionColumns;
 }
 
 function toNumber(value) {
@@ -255,7 +520,7 @@ function getStatus(row) {
 function normalizeCsvRow(row) {
   const status = getStatus(row);
   const comment = row.comment || row.privatecomment || '';
-  return {
+  const normalized = {
     game_name: row.objectname || row.originalname || '',
     average_rating: toNumber(row.average),
     weight: toNumber(row.avgweight),
@@ -275,15 +540,61 @@ function normalizeCsvRow(row) {
     mechanics: '',
     description: ''
   };
+  Object.keys(row).forEach(field => {
+    if (field.includes('.')) normalized[field] = row[field];
+  });
+  return normalized;
+}
+
+function loadCsvFile(filename) {
+  return fetch(filename)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(filename + ' could not be loaded (HTTP ' + response.status + ')');
+      }
+      return response.text();
+    })
+    .then(csvText => {
+      const rows = parseCSV(csvText);
+      if (!rows.length) throw new Error(filename + ' is empty or invalid.');
+      return rows;
+    });
+}
+
+function addJoinedColumns(collectionRows, sourceRows, sourceName, sourceKey) {
+  const sourceFields = Object.keys(sourceRows[0] || {});
+  sourceFields.forEach(field => {
+    ADDITIONAL_COLUMNS.push({
+      header: sourceName + '.' + field,
+      field: sourceName + '.' + field
+    });
+  });
+
+  const sourceByKey = new Map(sourceRows.map(row => [String(row[sourceKey] ?? '').trim(), row]));
+  return collectionRows.map(row => {
+    const sourceRow = sourceByKey.get(String(row.objectid ?? '').trim());
+    const joinedRow = { ...row };
+    sourceFields.forEach(field => {
+      joinedRow[sourceName + '.' + field] = sourceRow?.[field] ?? '';
+    });
+    return joinedRow;
+  });
 }
 
 function buildColGroup(columns = getActiveColumns()) {
   const colGroup = document.getElementById('colGroup');
   colGroup.innerHTML = '';
   const frag = document.createDocumentFragment();
-  columns.forEach(() => {
+  const collectionWidths = activeView === 'collection'
+    ? thumbnailEnabled
+      ? [125, 225, 120, 120, 111, 120, 190, 120, 390]
+      : [225, 120, 120, 111, 120, 190, 120, 390]
+    : thumbnailEnabled ? [125] : [];
+  columns.forEach((_, index) => {
     const col = document.createElement('col');
-    col.style.width = '120px';
+    col.style.width = activeView === 'collection'
+      ? (collectionWidths[index] ?? 120) + 'px'
+      : '120px';
     frag.appendChild(col);
   });
   colGroup.appendChild(frag);
@@ -301,6 +612,7 @@ function updateTableWidth() {
 
 function buildHeader() {
   const columns = getActiveColumns();
+  document.body.classList.toggle('thumbnail-view', thumbnailEnabled && activeView === 'collection');
   buildColGroup(columns);
   const row = document.getElementById('headerRow');
   row.innerHTML = '';
@@ -313,6 +625,9 @@ function buildHeader() {
     label.textContent = col.header;
     label.addEventListener('click', () => sortByColumn(index));
     th.appendChild(label);
+    if (activeView === 'collection' && col.field === 'status') {
+      buildStatusFilter(th);
+    }
     const resizer = document.createElement('div');
     resizer.className = 'col-resizer';
     th.appendChild(resizer);
@@ -323,9 +638,67 @@ function buildHeader() {
   buildFilterRow();
 }
 
+function buildStatusFilter(headerCell) {
+  headerCell.classList.add('status-filter-header');
+  const button = document.createElement('button');
+  button.className = 'status-filter-button';
+  button.type = 'button';
+  button.setAttribute('aria-label', 'Filter status');
+  button.setAttribute('aria-expanded', 'false');
+  const icon = document.createElement('span');
+  icon.className = 'status-filter-icon';
+  button.appendChild(icon);
+
+  const menu = document.createElement('div');
+  menu.className = 'status-filter-menu';
+  menu.hidden = true;
+  const statuses = [...new Set(allGames.map(game => String(game.status ?? '')))]
+    .sort((left, right) => left.localeCompare(right));
+  statuses.forEach(status => {
+    const label = document.createElement('label');
+    label.className = 'status-filter-option';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = status;
+    checkbox.checked = statusFilterValues.has(status);
+    checkbox.addEventListener('change', () => {
+      statusFilterValues = new Set(
+        [...menu.querySelectorAll('input:checked')].map(input => input.value)
+      );
+      render();
+    });
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(status || 'Blank status'));
+    menu.appendChild(label);
+  });
+  button.addEventListener('click', event => {
+    event.stopPropagation();
+    if (openStatusMenu && openStatusMenu !== menu) {
+      openStatusMenu.hidden = true;
+      openStatusMenu.previousElementSibling.setAttribute('aria-expanded', 'false');
+    }
+    menu.hidden = !menu.hidden;
+    button.setAttribute('aria-expanded', String(!menu.hidden));
+    openStatusMenu = menu.hidden ? null : menu;
+  });
+  menu.addEventListener('click', event => event.stopPropagation());
+  headerCell.appendChild(button);
+  headerCell.appendChild(menu);
+}
+
 let allGames = [];
 const sortState = { colIndex: null, dir: 1 };
 const filters = {};
+let statusFilterValues = new Set();
+let openStatusMenu = null;
+
+document.addEventListener('click', event => {
+  if (openStatusMenu && !openStatusMenu.contains(event.target)) {
+    openStatusMenu.hidden = true;
+    openStatusMenu.previousElementSibling.setAttribute('aria-expanded', 'false');
+    openStatusMenu = null;
+  }
+});
 
 function buildFilterRow() {
   const row = document.getElementById('filterRow');
@@ -365,6 +738,10 @@ function sortByColumn(colIndex) {
 function render() {
   const columns = getActiveColumns();
   let games = allGames.filter(game => {
+    if (activeView === 'collection' && statusFilterValues.size > 0 &&
+        !statusFilterValues.has(String(game.status ?? ''))) {
+      return false;
+    }
     return Object.entries(filters).every(([colIndex, value]) => {
       if (!value) return true;
       const field = columns[Number(colIndex)]?.field;
@@ -417,11 +794,92 @@ function enableColumnResize(headerRow) {
   });
 }
 
+let selectedGame = null;
+
+function setDialogText(id, value, fallback = 'N/A') {
+  document.getElementById(id).textContent = value === null || value === undefined || value === '' ? fallback : value;
+}
+
+function formatNumber(value) {
+  if (value === null || value === undefined || value === '') return 'N/A';
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toLocaleString('en-US') : 'N/A';
+}
+
+function formatRating(value) {
+  if (value === null || value === undefined || value === '') return 'N/A';
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toFixed(1) : 'N/A';
+}
+
+function formatGeekRating(value) {
+  if (value === null || value === undefined || value === '') return 'N/A';
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toFixed(3) : 'N/A';
+}
+
+function getBoardGameUrl(id, title) {
+  const slug = String(title || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return `https://boardgamegeek.com/boardgame/${encodeURIComponent(String(id))}/${slug}`;
+}
+
+function openGameDialog(game) {
+  selectedGame = game;
+  const dialog = document.getElementById('gameDialog');
+  const cover = document.getElementById('dialogCover');
+  const coverUrl = game['collectiondetails2026.image'] || game['collectiondetails2026.thumbnail'];
+  cover.hidden = !coverUrl;
+  cover.src = coverUrl || '';
+  cover.alt = game.game_name ? game.game_name + ' cover' : '';
+  cover.onerror = () => { cover.hidden = true; };
+
+  setDialogText('dialogGameTitle', game.game_name, 'Untitled game');
+  setDialogText('dialogYear', game.year_published ? '(' + game.year_published + ')' : '');
+  setDialogText('dialogOverallRank', formatNumber(game['boardgames_ranks.rank']));
+  setDialogText('dialogFamilyRank', formatNumber(game['boardgames_ranks.familygames_rank']));
+  setDialogText('dialogRating', formatRating(game.average_rating));
+  setDialogText('dialogGeekRating', formatGeekRating(game['collectiondetails2026.value4']));
+  setDialogText('dialogPlayers', game.min_players !== null && game.max_players !== null
+    ? game.min_players + '-' + game.max_players
+    : 'N/A');
+  setDialogText('dialogPlayTime', game.playing_time_min !== null && game.playing_time_max !== null
+    ? game.playing_time_min === game.playing_time_max ? game.playing_time_min + ' Min' : game.playing_time_min + '-' + game.playing_time_max + ' Min'
+    : 'N/A');
+  setDialogText('dialogAge', game.min_age ? game.min_age + '+' : 'N/A');
+  setDialogText('dialogWeight', game.weight === null ? 'N/A' : game.weight.toFixed(2));
+  setDialogText('dialogDescription', 'Description unavailable in the loaded collection data.', 'Description unavailable in the loaded collection data.');
+  setDialogText('dialogCollectionStatus', game.status, 'Not in collection');
+  setDialogText('dialogStatus', game.status, 'N/A');
+  setDialogText('dialogYourRating', game.rating === null ? 'N/A' : game.rating);
+  setDialogText('dialogYourPlays', game.numplays === null ? '0' : formatNumber(game.numplays));
+  dialog.showModal();
+}
+
+function closeGameDialog() {
+  const dialog = document.getElementById('gameDialog');
+  if (dialog.open) dialog.close();
+}
+
+document.getElementById('dialogClose').addEventListener('click', closeGameDialog);
+document.getElementById('dialogPlayButton').addEventListener('click', () => {
+  if (!selectedGame) return;
+  selectedGame.numplays = (selectedGame.numplays || 0) + 1;
+  setDialogText('dialogYourPlays', formatNumber(selectedGame.numplays));
+  render();
+});
+
 function buildRows(games) {
   const tbody = document.getElementById('bodyRows');
   const columns = getActiveColumns();
   const gameTable = document.getElementById('gameTable');
   gameTable.classList.toggle('view-collection-table', activeView === 'collection');
+  document.body.classList.toggle('collection-view', activeView === 'collection');
   const frag = document.createDocumentFragment();
   games.forEach(game => {
     const tr = document.createElement('tr');
@@ -429,9 +887,37 @@ function buildRows(games) {
       const td = document.createElement('td');
       if (col.field && game[col.field] !== undefined && game[col.field] !== null) {
         const value = game[col.field];
-        if (activeView === 'collection' && col.field === 'game_name') {
-          td.classList.add('title-cell');
+        if (col.field === THUMBNAIL_COLUMN.field) {
+          td.classList.add('thumbnail-cell');
+          if (value) {
+            const thumbnail = document.createElement('img');
+            thumbnail.className = 'collection-thumbnail';
+            thumbnail.src = value;
+            thumbnail.alt = game.game_name ? game.game_name + ' thumbnail' : 'Game thumbnail';
+            thumbnail.onerror = () => { thumbnail.remove(); };
+            td.appendChild(thumbnail);
+          }
+        } else if (col.field === RANK_ID_FIELD) {
+          const link = document.createElement('a');
+          link.className = 'bgg-id-link';
+          link.href = getBoardGameUrl(value, game.game_name);
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = value;
+          td.appendChild(link);
+        } else if (col.field === 'game_name') {
+          td.classList.add('dialog-trigger');
+          if (activeView === 'collection') td.classList.add('title-cell');
           td.textContent = value;
+          td.tabIndex = 0;
+          td.setAttribute('role', 'button');
+          td.addEventListener('click', () => openGameDialog(game));
+          td.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              openGameDialog(game);
+            }
+          });
         } else if (activeView === 'collection' && col.field === 'bgg_rating') {
           td.classList.add('rating-cell');
           td.textContent = value === null ? 'N/A' : value;
@@ -464,6 +950,7 @@ function buildRows(games) {
 function changeView(nextView) {
   activeView = nextView;
   Object.keys(filters).forEach(key => delete filters[key]);
+  statusFilterValues.clear();
   sortState.colIndex = null;
   sortState.dir = 1;
   document.querySelectorAll('#headerRow th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
@@ -471,25 +958,32 @@ function changeView(nextView) {
   render();
 }
 
+function changeThumbnail(enabled) {
+  thumbnailEnabled = enabled;
+  buildHeader();
+  render();
+}
+
 function loadData() {
   const status = document.getElementById('status');
-  fetch('collection.csv')
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('collection.csv could not be loaded (HTTP ' + response.status + ')');
-      }
-      return response.text();
-    })
-    .then(csvText => {
-      const rows = parseCSV(csvText);
-      if (!rows.length) {
-        throw new Error('collection.csv is empty or invalid.');
-      }
-      allGames = rows.map(normalizeCsvRow);
+  status.textContent = 'Loading collection.csv, boardgames_ranks.csv, and collectiondetails2026.csv...';
+  Promise.all([
+    loadCsvFile('collection.csv'),
+    loadCsvFile('boardgames_ranks.csv'),
+    loadCsvFile('collectiondetails2026.csv')
+  ])
+    .then(([collectionRows, rankRows, detailRows]) => {
+      ADDITIONAL_COLUMNS.length = 0;
+      let joinedRows = addJoinedColumns(collectionRows, rankRows, 'boardgames_ranks', 'id');
+      joinedRows = addJoinedColumns(joinedRows, detailRows, 'collectiondetails2026', 'objectid');
+      allGames = joinedRows.map(normalizeCsvRow);
       buildHeader();
       const viewSelect = document.getElementById('viewSelect');
       viewSelect.addEventListener('change', (event) => {
         changeView(event.target.value);
+      });
+      document.getElementById('thumbnailToggle').addEventListener('change', (event) => {
+        changeThumbnail(event.target.checked);
       });
       render();
     })
