@@ -29,7 +29,7 @@
 </head>
 <body>
 <header><h1>OurBGG</h1></header>
-<div id="status">Loading data from BGG.json&hellip;</div>
+<div id="status">Loading data from collection.csv&hellip;</div>
 <div class="table-wrap">
   <table>
     <colgroup id="colGroup"></colgroup>
@@ -41,12 +41,9 @@
   </table>
 </div>
 
-<!-- Generated from BGG.json by generate_bgg_data.py; a <script> tag (unlike fetch) can load
-     local files without a web server. Rerun that script after BGG.json changes. -->
-<script src="BGG.data.js"></script>
 <script>
 // Column list mirrors every column (A-AO) of the "Games" sheet in Games.xlsx, in order.
-// field = matching key in BGG.json, or null when BGG.json has no equivalent data (rendered blank).
+// field = matching key in the CSV data, or null when the CSV has no equivalent data (rendered blank).
 const COLUMNS = [
   { header: 'Name',           field: 'game_name' },
   { header: 'Rating',         field: 'average_rating' },
@@ -91,6 +88,97 @@ const COLUMNS = [
 ];
 
 const WRAP_FIELDS = new Set(['description', 'categories', 'mechanics', 'alternate_names', 'families', 'publishers']);
+
+function toNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const num = Number(String(value).replace(/[^0-9.-]/g, ''));
+  return Number.isFinite(num) ? num : null;
+}
+
+function parseAge(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const match = String(value).match(/\d+/);
+  return match ? Number(match[0]) : null;
+}
+
+function parseCSV(text) {
+  const rows = [];
+  let currentRow = [];
+  let currentValue = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+
+    if (char === '"') {
+      if (inQuotes && text[i + 1] === '"') {
+        currentValue += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (char === ',' && !inQuotes) {
+      currentRow.push(currentValue);
+      currentValue = '';
+      continue;
+    }
+
+    if ((char === '\n' || char === '\r') && !inQuotes) {
+      if (char === '\r' && text[i + 1] === '\n') {
+        i++;
+      }
+      currentRow.push(currentValue);
+      if (currentRow.some(value => value !== '')) {
+        rows.push(currentRow);
+      }
+      currentRow = [];
+      currentValue = '';
+      continue;
+    }
+
+    currentValue += char;
+  }
+
+  if (currentValue.length > 0 || currentRow.length > 0) {
+    currentRow.push(currentValue);
+    if (currentRow.some(value => value !== '')) {
+      rows.push(currentRow);
+    }
+  }
+
+  if (rows.length === 0) return [];
+
+  const [header, ...dataRows] = rows;
+  return dataRows.map(row => {
+    const entry = {};
+    header.forEach((key, index) => {
+      const value = row[index] ?? '';
+      entry[key.trim()] = value.trim();
+    });
+    return entry;
+  });
+}
+
+function normalizeCsvRow(row) {
+  return {
+    game_name: row.objectname || row.originalname || '',
+    average_rating: toNumber(row.average),
+    weight: toNumber(row.avgweight),
+    year_published: toNumber(row.yearpublished),
+    min_players: toNumber(row.minplayers),
+    max_players: toNumber(row.maxplayers),
+    min_age: parseAge(row.bggrecagerange),
+    playing_time_min: toNumber(row.minplaytime),
+    playing_time_max: toNumber(row.maxplaytime),
+    bgg_id: toNumber(row.objectid),
+    categories: '',
+    mechanics: '',
+    description: ''
+  };
+}
 
 function buildColGroup() {
   const colGroup = document.getElementById('colGroup');
@@ -244,18 +332,26 @@ function buildRows(games) {
 
 function loadData() {
   const status = document.getElementById('status');
-  try {
-    // BGG_DATA is provided by BGG.data.js (generated from BGG.json by generate_bgg_data.py).
-    if (typeof window.BGG_DATA === 'undefined') {
-      throw new Error('BGG.data.js not found. Run "python generate_bgg_data.py" to generate it from BGG.json.');
-    }
-    allGames = window.BGG_DATA;
-    buildHeader();
-    render();
-  } catch (err) {
-    status.classList.add('error');
-    status.textContent = 'Failed to load data: ' + err.message;
-  }
+  fetch('collection.csv')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('collection.csv could not be loaded (HTTP ' + response.status + ')');
+      }
+      return response.text();
+    })
+    .then(csvText => {
+      const rows = parseCSV(csvText);
+      if (!rows.length) {
+        throw new Error('collection.csv is empty or invalid.');
+      }
+      allGames = rows.map(normalizeCsvRow);
+      buildHeader();
+      render();
+    })
+    .catch(err => {
+      status.classList.add('error');
+      status.textContent = 'Failed to load data: ' + err.message;
+    });
 }
 
 loadData();
