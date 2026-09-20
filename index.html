@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OurBGG</title>
+<style>
+  body { font-family: Segoe UI, Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+  header { padding: 12px 16px; background: #2b2f38; color: #fff; }
+  header h1 { margin: 0; font-size: 18px; }
+  #status { padding: 8px 16px; font-size: 13px; color: #444; }
+  #status.error { color: #b00020; font-weight: bold; }
+  .table-wrap { overflow: auto; max-height: calc(100vh - 90px); margin: 0 16px 16px; border: 1px solid #ccc; }
+  table { border-collapse: collapse; font-size: 12px; white-space: nowrap; table-layout: fixed; }
+  th, td { border: 1px solid #ddd; padding: 4px 8px; text-align: left; overflow: hidden; text-overflow: ellipsis; }
+  thead th { position: sticky; top: 0; background: #2b2f38; color: #fff; z-index: 2; }
+  tbody tr:nth-child(even) { background: #fafafa; }
+  tbody tr:hover { background: #eef6ff; }
+  td.wrap { white-space: normal; max-width: 320px; }
+  th { position: relative; }
+  .col-resizer { position: absolute; top: 0; right: 0; width: 6px; height: 100%; cursor: col-resize; user-select: none; touch-action: none; }
+  .col-resizer:hover, .col-resizer.resizing { background: #5b9dd9; }
+  .col-label { cursor: pointer; }
+  .col-label::after { content: ''; display: inline-block; width: 10px; }
+  th.sort-asc .col-label::after { content: '\25b2'; }
+  th.sort-desc .col-label::after { content: '\25bc'; }
+  #filterRow th { top: 27px; padding: 2px 4px; }
+  #filterRow input { width: 100%; box-sizing: border-box; font-size: 12px; padding: 2px 4px; }
+</style>
+</head>
+<body>
+<header><h1>OurBGG</h1></header>
+<div id="status">Loading data from BGG.json&hellip;</div>
+<div class="table-wrap">
+  <table>
+    <colgroup id="colGroup"></colgroup>
+    <thead>
+      <tr id="headerRow"></tr>
+      <tr id="filterRow"></tr>
+    </thead>
+    <tbody id="bodyRows"></tbody>
+  </table>
+</div>
+
+<!-- Generated from BGG.json by generate_bgg_data.py; a <script> tag (unlike fetch) can load
+     local files without a web server. Rerun that script after BGG.json changes. -->
+<script src="BGG.data.js"></script>
+<script>
+// Column list mirrors every column (A-AO) of the "Games" sheet in Games.xlsx, in order.
+// field = matching key in BGG.json, or null when BGG.json has no equivalent data (rendered blank).
+const COLUMNS = [
+  { header: 'Name',           field: 'game_name' },
+  { header: 'Rating',         field: 'average_rating' },
+  { header: 'Complex',        field: 'weight' },
+  { header: 'Yr',             field: 'year_published' },
+  { header: 'YrAquired',      field: null },
+  { header: 'MAquired',       field: null },
+  { header: 'Played?',        field: null },
+  { header: 'P-',             field: 'min_players' },
+  { header: 'P+',             field: 'max_players' },
+  { header: 'Ages',           field: 'min_age' },
+  { header: 'Tmin',           field: 'playing_time_min' },
+  { header: 'Tmax',           field: 'playing_time_max' },
+  { header: 'bggSTAT',        field: null },
+  { header: 'bgg-ID',         field: 'bgg_id' },
+  { header: 'RecG',           field: null },
+  { header: 'TYPE',           field: null },
+  { header: 'Category',       field: 'categories' },
+  { header: 'Mechanism',      field: 'mechanics' },
+  { header: 'complexrange',   field: null },
+  { header: 'Min Age Range',  field: null },
+  { header: 'Game_Type',      field: null },
+  { header: '1',              field: null },
+  { header: '5',              field: null },
+  { header: '9',              field: null },
+  { header: '13',             field: null },
+  { header: 'category',       field: null },
+  { header: '1',              field: null },
+  { header: '5',              field: null },
+  { header: '9',              field: null },
+  { header: '13',             field: null },
+  { header: '17',             field: null },
+  { header: '21',             field: null },
+  { header: 'mechanic',       field: null },
+  { header: '1',              field: null },
+  { header: '5',              field: null },
+  { header: '9',              field: null },
+  { header: '13',             field: null },
+  { header: '17',             field: null },
+  { header: '21',             field: null },
+  { header: '25',             field: null }
+];
+
+const WRAP_FIELDS = new Set(['description', 'categories', 'mechanics', 'alternate_names', 'families', 'publishers']);
+
+function buildColGroup() {
+  const colGroup = document.getElementById('colGroup');
+  const frag = document.createDocumentFragment();
+  COLUMNS.forEach(() => {
+    const col = document.createElement('col');
+    col.style.width = '120px';
+    frag.appendChild(col);
+  });
+  colGroup.appendChild(frag);
+  updateTableWidth();
+}
+
+// Chrome only honors <col> widths under table-layout:fixed when the table itself has
+// an explicit (non-auto) width, so keep the table's width in sync with the column sum.
+function updateTableWidth() {
+  const colGroup = document.getElementById('colGroup');
+  const total = Array.from(colGroup.children)
+    .reduce((sum, col) => sum + parseFloat(col.style.width || '120'), 0);
+  document.querySelector('table').style.width = total + 'px';
+}
+
+function buildHeader() {
+  buildColGroup();
+  const row = document.getElementById('headerRow');
+  const frag = document.createDocumentFragment();
+  COLUMNS.forEach((col, index) => {
+    const th = document.createElement('th');
+    th.dataset.colIndex = index;
+    const label = document.createElement('span');
+    label.className = 'col-label';
+    label.textContent = col.header;
+    label.addEventListener('click', () => sortByColumn(index));
+    th.appendChild(label);
+    const resizer = document.createElement('div');
+    resizer.className = 'col-resizer';
+    th.appendChild(resizer);
+    frag.appendChild(th);
+  });
+  row.appendChild(frag);
+  enableColumnResize(row);
+  buildFilterRow();
+}
+
+let allGames = [];
+const sortState = { colIndex: null, dir: 1 };
+const filters = {};
+
+function buildFilterRow() {
+  const row = document.getElementById('filterRow');
+  const frag = document.createDocumentFragment();
+  COLUMNS.forEach((col, index) => {
+    const th = document.createElement('th');
+    if (col.field) {
+      const input = document.createElement('input');
+      input.placeholder = 'Filter…';
+      input.addEventListener('input', () => {
+        filters[index] = input.value.trim().toLowerCase();
+        render();
+      });
+      th.appendChild(input);
+    }
+    frag.appendChild(th);
+  });
+  row.appendChild(frag);
+}
+
+function sortByColumn(colIndex) {
+  const col = COLUMNS[colIndex];
+  if (!col.field) return;
+  sortState.dir = sortState.colIndex === colIndex ? -sortState.dir : 1;
+  sortState.colIndex = colIndex;
+
+  document.querySelectorAll('#headerRow th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+  const th = document.querySelector(`#headerRow th[data-col-index="${colIndex}"]`);
+  th.classList.add(sortState.dir === 1 ? 'sort-asc' : 'sort-desc');
+
+  render();
+}
+
+function render() {
+  let games = allGames.filter(game => {
+    return Object.entries(filters).every(([colIndex, value]) => {
+      if (!value) return true;
+      const field = COLUMNS[colIndex].field;
+      const cell = game[field];
+      return cell !== null && cell !== undefined && String(cell).toLowerCase().includes(value);
+    });
+  });
+
+  if (sortState.colIndex !== null) {
+    const col = COLUMNS[sortState.colIndex];
+    games = [...games].sort((a, b) => {
+      const av = a[col.field];
+      const bv = b[col.field];
+      if (av === null || av === undefined) return 1;
+      if (bv === null || bv === undefined) return -1;
+      if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * sortState.dir;
+      return String(av).localeCompare(String(bv)) * sortState.dir;
+    });
+  }
+
+  document.getElementById('bodyRows').innerHTML = '';
+  buildRows(games);
+  document.getElementById('status').textContent = `Showing ${games.length} of ${allGames.length} games`;
+}
+
+function enableColumnResize(headerRow) {
+  headerRow.querySelectorAll('.col-resizer').forEach(resizer => {
+    const th = resizer.parentElement;
+    const colIndex = Number(th.dataset.colIndex);
+    resizer.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const col = document.getElementById('colGroup').children[colIndex];
+      const startX = e.pageX;
+      const startWidth = th.getBoundingClientRect().width;
+      resizer.classList.add('resizing');
+      function onMouseMove(ev) {
+        const newWidth = Math.max(40, startWidth + (ev.pageX - startX));
+        col.style.width = newWidth + 'px';
+        updateTableWidth();
+      }
+      function onMouseUp() {
+        resizer.classList.remove('resizing');
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      }
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    });
+  });
+}
+
+function buildRows(games) {
+  const tbody = document.getElementById('bodyRows');
+  const frag = document.createDocumentFragment();
+  games.forEach(game => {
+    const tr = document.createElement('tr');
+    COLUMNS.forEach(col => {
+      const td = document.createElement('td');
+      if (col.field && game[col.field] !== undefined && game[col.field] !== null) {
+        td.textContent = game[col.field];
+        if (WRAP_FIELDS.has(col.field)) td.classList.add('wrap');
+      }
+      tr.appendChild(td);
+    });
+    frag.appendChild(tr);
+  });
+  tbody.appendChild(frag);
+}
+
+function loadData() {
+  const status = document.getElementById('status');
+  try {
+    // BGG_DATA is provided by BGG.data.js (generated from BGG.json by generate_bgg_data.py).
+    if (typeof window.BGG_DATA === 'undefined') {
+      throw new Error('BGG.data.js not found. Run "python generate_bgg_data.py" to generate it from BGG.json.');
+    }
+    allGames = window.BGG_DATA;
+    buildHeader();
+    render();
+  } catch (err) {
+    status.classList.add('error');
+    status.textContent = 'Failed to load data: ' + err.message;
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
