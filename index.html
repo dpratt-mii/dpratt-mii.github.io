@@ -5,9 +5,47 @@
 <title>OurBGG</title>
 <style>
   body { font-family: Segoe UI, Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
-  header { padding: 12px 16px; background: #2b2f38; color: #fff; }
+  header { padding: 12px 16px; background: #2b2f38; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   header h1 { margin: 0; font-size: 18px; }
+  .view-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .view-toggle label { font-weight: 600; }
+  .view-toggle select { padding: 6px 10px; border-radius: 4px; border: 1px solid #d0d7de; font-size: 13px; }
   #status { padding: 8px 16px; font-size: 13px; color: #444; }
+  .view-collection-table thead th {
+    background: #ffffff;
+    color: #1d5fb3;
+    border-color: #cfd6de;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    white-space: normal;
+  }
+  .view-collection-table tbody td {
+    padding: 10px 8px;
+    vertical-align: top;
+    background: #fff;
+    color: #2c2c2c;
+  }
+  .view-collection-table tbody tr:nth-child(even) td { background: #f8f8f8; }
+  .view-collection-table tbody td.title-cell {
+    color: #1d5fb3;
+    font-size: 18px;
+    line-height: 1.2;
+    font-weight: 500;
+    white-space: normal;
+  }
+  .view-collection-table tbody td.rating-cell,
+  .view-collection-table tbody td.status-cell,
+  .view-collection-table tbody td.plays-cell { text-align: center; }
+  .view-collection-table tbody td.status-cell { font-weight: 600; }
+  .view-collection-table tbody td.status-cell.owned { color: #2a7a1b; }
+  .view-collection-table tbody td.status-cell.prev-owned { color: #5d4ca0; }
+  .view-collection-table tbody td.comment-cell {
+    white-space: pre-line;
+    min-width: 260px;
+    font-size: 13px;
+    line-height: 1.3;
+  }
   #status.error { color: #b00020; font-weight: bold; }
   .table-wrap { overflow: auto; max-height: calc(100vh - 90px); margin: 0 16px 16px; border: 1px solid #ccc; }
   table { border-collapse: collapse; font-size: 12px; white-space: nowrap; table-layout: fixed; }
@@ -28,10 +66,20 @@
 </style>
 </head>
 <body>
-<header><h1>OurBGG</h1></header>
+<header>
+  <h1>OurBGG</h1>
+  <div class="view-toggle">
+    <label for="viewSelect">View</label>
+    <select id="viewSelect" aria-label="View">
+      <option value="collection" selected>Collection View</option>
+      <option value="detailed">Detailed View</option>
+      <option value="bgg">BGG View</option>
+    </select>
+  </div>
+</header>
 <div id="status">Loading data from collection.csv&hellip;</div>
 <div class="table-wrap">
-  <table>
+  <table id="gameTable">
     <colgroup id="colGroup"></colgroup>
     <thead>
       <tr id="headerRow"></tr>
@@ -87,7 +135,39 @@ const COLUMNS = [
   { header: '25',             field: null }
 ];
 
+const BGG_COLUMNS = [
+  { header: 'Name',      field: 'game_name' },
+  { header: 'Rating',    field: 'average_rating' },
+  { header: 'Complex',   field: 'weight' },
+  { header: 'Yr',        field: 'year_published' },
+  { header: 'P-',        field: 'min_players' },
+  { header: 'P+',        field: 'max_players' },
+  { header: 'Ages',      field: 'min_age' },
+  { header: 'Tmin',      field: 'playing_time_min' },
+  { header: 'Tmax',      field: 'playing_time_max' },
+  { header: 'bgg-ID',    field: 'bgg_id' },
+  { header: 'Category',  field: 'categories' },
+  { header: 'Mechanism', field: 'mechanics' }
+];
+
+const COLLECTION_COLUMNS = [
+  { header: 'Title',        field: 'game_name' },
+  { header: 'Version',      field: null },
+  { header: 'Geek Rating',  field: 'bgg_rating' },
+  { header: 'Your Rating',  field: 'rating' },
+  { header: 'Status',       field: 'status' },
+  { header: 'Your Plays',   field: 'numplays' },
+  { header: 'Comment',      field: 'comment' }
+];
+
+let activeView = 'collection';
 const WRAP_FIELDS = new Set(['description', 'categories', 'mechanics', 'alternate_names', 'families', 'publishers']);
+
+function getActiveColumns() {
+  if (activeView === 'bgg') return BGG_COLUMNS;
+  if (activeView === 'collection') return COLLECTION_COLUMNS;
+  return COLUMNS;
+}
 
 function toNumber(value) {
   if (value === null || value === undefined || value === '') return null;
@@ -162,7 +242,19 @@ function parseCSV(text) {
   });
 }
 
+function getStatus(row) {
+  if (row.own === '1') return 'Owned';
+  if (row.prevowned === '1') return 'Prev. Owned';
+  if (row.wanttoplay === '1') return 'Want to Play';
+  if (row.want === '1') return 'Want';
+  if (row.wishlist === '1') return 'Wishlist';
+  if (row.fortrade === '1') return 'For Trade';
+  return '';
+}
+
 function normalizeCsvRow(row) {
+  const status = getStatus(row);
+  const comment = row.comment || row.privatecomment || '';
   return {
     game_name: row.objectname || row.originalname || '',
     average_rating: toNumber(row.average),
@@ -174,16 +266,22 @@ function normalizeCsvRow(row) {
     playing_time_min: toNumber(row.minplaytime),
     playing_time_max: toNumber(row.maxplaytime),
     bgg_id: toNumber(row.objectid),
+    bgg_rating: toNumber(row.baverage),
+    rating: toNumber(row.rating),
+    numplays: toNumber(row.numplays),
+    status,
+    comment,
     categories: '',
     mechanics: '',
     description: ''
   };
 }
 
-function buildColGroup() {
+function buildColGroup(columns = getActiveColumns()) {
   const colGroup = document.getElementById('colGroup');
+  colGroup.innerHTML = '';
   const frag = document.createDocumentFragment();
-  COLUMNS.forEach(() => {
+  columns.forEach(() => {
     const col = document.createElement('col');
     col.style.width = '120px';
     frag.appendChild(col);
@@ -202,10 +300,12 @@ function updateTableWidth() {
 }
 
 function buildHeader() {
-  buildColGroup();
+  const columns = getActiveColumns();
+  buildColGroup(columns);
   const row = document.getElementById('headerRow');
+  row.innerHTML = '';
   const frag = document.createDocumentFragment();
-  COLUMNS.forEach((col, index) => {
+  columns.forEach((col, index) => {
     const th = document.createElement('th');
     th.dataset.colIndex = index;
     const label = document.createElement('span');
@@ -229,8 +329,10 @@ const filters = {};
 
 function buildFilterRow() {
   const row = document.getElementById('filterRow');
+  row.innerHTML = '';
+  const columns = getActiveColumns();
   const frag = document.createDocumentFragment();
-  COLUMNS.forEach((col, index) => {
+  columns.forEach((col, index) => {
     const th = document.createElement('th');
     if (col.field) {
       const input = document.createElement('input');
@@ -247,30 +349,33 @@ function buildFilterRow() {
 }
 
 function sortByColumn(colIndex) {
-  const col = COLUMNS[colIndex];
+  const columns = getActiveColumns();
+  const col = columns[colIndex];
   if (!col.field) return;
   sortState.dir = sortState.colIndex === colIndex ? -sortState.dir : 1;
   sortState.colIndex = colIndex;
 
   document.querySelectorAll('#headerRow th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
   const th = document.querySelector(`#headerRow th[data-col-index="${colIndex}"]`);
-  th.classList.add(sortState.dir === 1 ? 'sort-asc' : 'sort-desc');
+  if (th) th.classList.add(sortState.dir === 1 ? 'sort-asc' : 'sort-desc');
 
   render();
 }
 
 function render() {
+  const columns = getActiveColumns();
   let games = allGames.filter(game => {
     return Object.entries(filters).every(([colIndex, value]) => {
       if (!value) return true;
-      const field = COLUMNS[colIndex].field;
+      const field = columns[Number(colIndex)]?.field;
+      if (!field) return true;
       const cell = game[field];
       return cell !== null && cell !== undefined && String(cell).toLowerCase().includes(value);
     });
   });
 
-  if (sortState.colIndex !== null) {
-    const col = COLUMNS[sortState.colIndex];
+  if (sortState.colIndex !== null && columns[sortState.colIndex]) {
+    const col = columns[sortState.colIndex];
     games = [...games].sort((a, b) => {
       const av = a[col.field];
       const bv = b[col.field];
@@ -314,20 +419,56 @@ function enableColumnResize(headerRow) {
 
 function buildRows(games) {
   const tbody = document.getElementById('bodyRows');
+  const columns = getActiveColumns();
+  const gameTable = document.getElementById('gameTable');
+  gameTable.classList.toggle('view-collection-table', activeView === 'collection');
   const frag = document.createDocumentFragment();
   games.forEach(game => {
     const tr = document.createElement('tr');
-    COLUMNS.forEach(col => {
+    columns.forEach(col => {
       const td = document.createElement('td');
       if (col.field && game[col.field] !== undefined && game[col.field] !== null) {
-        td.textContent = game[col.field];
-        if (WRAP_FIELDS.has(col.field)) td.classList.add('wrap');
+        const value = game[col.field];
+        if (activeView === 'collection' && col.field === 'game_name') {
+          td.classList.add('title-cell');
+          td.textContent = value;
+        } else if (activeView === 'collection' && col.field === 'bgg_rating') {
+          td.classList.add('rating-cell');
+          td.textContent = value === null ? 'N/A' : value;
+        } else if (activeView === 'collection' && col.field === 'rating') {
+          td.classList.add('rating-cell');
+          td.textContent = value === null ? 'N/A' : value;
+        } else if (activeView === 'collection' && col.field === 'status') {
+          td.classList.add('status-cell');
+          if (value === 'Owned') td.classList.add('owned');
+          if (value === 'Prev. Owned') td.classList.add('prev-owned');
+          td.textContent = value;
+        } else if (activeView === 'collection' && col.field === 'numplays') {
+          td.classList.add('plays-cell');
+          td.textContent = value === null ? '' : value;
+        } else if (activeView === 'collection' && col.field === 'comment') {
+          td.classList.add('comment-cell');
+          td.textContent = value || '';
+        } else {
+          td.textContent = value;
+          if (WRAP_FIELDS.has(col.field)) td.classList.add('wrap');
+        }
       }
       tr.appendChild(td);
     });
     frag.appendChild(tr);
   });
   tbody.appendChild(frag);
+}
+
+function changeView(nextView) {
+  activeView = nextView;
+  Object.keys(filters).forEach(key => delete filters[key]);
+  sortState.colIndex = null;
+  sortState.dir = 1;
+  document.querySelectorAll('#headerRow th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+  buildHeader();
+  render();
 }
 
 function loadData() {
@@ -346,6 +487,10 @@ function loadData() {
       }
       allGames = rows.map(normalizeCsvRow);
       buildHeader();
+      const viewSelect = document.getElementById('viewSelect');
+      viewSelect.addEventListener('change', (event) => {
+        changeView(event.target.value);
+      });
       render();
     })
     .catch(err => {
