@@ -5,25 +5,65 @@
 <title>OurBGG</title>
 <style>
   body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
-  header { position: relative; z-index: 10; padding: 12px 16px; background: #2b2f38; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .header-brand { display: grid; gap: 5px; }
+  header { padding: 12px 16px; background: #2b2f38; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .header-title { display: grid; gap: 4px; }
   header h1 { margin: 0; font-size: 18px; }
-  .view-selector { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-  .view-toggle { display: flex; align-items: center; justify-content: flex-end; gap: 10px; font-size: 13px; }
-  .header-filters { display: flex; align-items: center; gap: 6px; }
-  .header-filter { position: relative; display: inline-flex; min-width: 150px; align-items: center; justify-content: space-between; gap: 8px; color: #fff; }
-  .header-filter-label { font-weight: 600; }
-  .view-selector label { font-weight: 600; }
-  .view-selector select { padding: 6px 10px; border-radius: 4px; border: 1px solid #d0d7de; font-size: 13px; }
+  .view-select { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .view-toggle { display: flex; align-items: flex-end; gap: 12px; font-size: 13px; }
+  .view-toggle label { font-weight: 600; }
+  .view-select select { padding: 6px 10px; border-radius: 4px; border: 1px solid #d0d7de; font-size: 13px; }
   .thumbnail-toggle { display: inline-flex; align-items: center; gap: 5px; color: #fff; cursor: pointer; }
   .thumbnail-toggle input { width: 16px; height: 16px; margin: 0; accent-color: #fff; }
+  .header-filter { position: relative; display: grid; gap: 4px; min-width: 150px; }
+  .header-filter-title { color: #fff; font-size: 12px; font-weight: 600; }
+  .header-filter-button {
+    display: flex;
+    width: 100%;
+    min-height: 30px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 8px;
+    border: 1px solid #d0d7de;
+    border-radius: 3px;
+    color: #111;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    text-align: left;
+  }
+  .header-filter-button::after { content: '\25bc'; color: #555; font-size: 10px; }
+  .header-filter-button.active { border-color: #75a7df; }
+  .header-filter-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 5;
+    display: grid;
+    width: 240px;
+    max-height: 310px;
+    gap: 6px;
+    overflow: auto;
+    margin-top: 3px;
+    padding: 8px;
+    border: 1px solid #c9c9c9;
+    color: #666;
+    background: #fff;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, .2);
+    font-size: 14px;
+  }
+  .header-filter-menu[hidden] { display: none; }
+  .header-filter-search { width: 100%; box-sizing: border-box; padding: 7px; border: 1px solid #aaa; font-size: 14px; }
+  .header-filter-option { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+  .header-filter-option input { width: 16px; height: 16px; margin: 0; accent-color: #3778c9; }
+  .header-filter-select-all { padding-bottom: 5px; border-bottom: 1px solid #ddd; }
   #status { padding: 8px 16px; font-size: 13px; color: #444; }
   body.collection-view { background: #fff; }
   body.collection-view > header { background: #403b68; min-height: 42px; box-sizing: border-box; padding: 7px 16px; }
   body.collection-view > header h1,
   body.collection-view > header .view-toggle label { color: #fff; }
   body.collection-view > header h1 { font-size: 16px; }
-  body.collection-view > header .view-selector select { padding: 4px 8px; }
+  body.collection-view > header .view-select select { padding: 4px 8px; }
   body.collection-view #status {
     box-sizing: border-box;
     margin: 0 0 4px;
@@ -127,9 +167,9 @@
     position: absolute;
     top: calc(100% - 1px);
     right: 4px;
-    z-index: 20;
+    z-index: 4;
     display: grid;
-    min-width: 240px;
+    min-width: 170px;
     gap: 6px;
     padding: 10px;
     border: 1px solid #b7c0cc;
@@ -141,14 +181,7 @@
     font-weight: 400;
     text-align: left;
   }
-  .header-filter .status-filter-menu { top: calc(100% + 4px); right: 0; }
   .status-filter-menu[hidden] { display: none; }
-  .status-filter-menu-title {
-    padding-bottom: 4px;
-    border-bottom: 1px solid #d9dee5;
-    color: #333;
-    font-weight: 700;
-  }
   .status-filter-option { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
   .status-filter-option input { margin: 0; }
   #filterRow th { top: 27px; padding: 2px 4px; }
@@ -293,9 +326,9 @@
 </head>
 <body>
 <header>
-  <div class="header-brand">
+  <div class="header-title">
     <h1>Our BGG Collection</h1>
-    <div class="view-selector">
+    <div class="view-select">
       <label for="viewSelect">View</label>
       <select id="viewSelect" aria-label="View">
         <option value="collection" selected>Collection View</option>
@@ -304,7 +337,8 @@
     </div>
   </div>
   <div class="view-toggle">
-    <div class="header-filters" id="headerFilters"></div>
+    <div class="header-filter" id="statusFilterControl"></div>
+    <div class="header-filter" id="collectionFilterControl"></div>
     <label class="thumbnail-toggle" for="thumbnailToggle">
       <input id="thumbnailToggle" type="checkbox" aria-label="Thumbnail" checked>
       Thumbnail
@@ -664,120 +698,129 @@ function buildHeader() {
   row.appendChild(frag);
   enableColumnResize(row);
   buildFilterRow();
-  buildHeaderFilters();
 }
 
 let allGames = [];
 const sortState = { colIndex: null, dir: 1 };
 const filters = {};
 
-function buildHeaderFilters() {
-  const container = document.getElementById('headerFilters');
-  container.innerHTML = '';
-  if (activeView !== 'collection') return;
-
-  [
-    ['Status', 'status'],
-    ['In Collection', 'in_collection']
-  ].forEach(([labelText, field]) => {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'header-filter';
-    const label = document.createElement('span');
-    label.className = 'header-filter-label';
-    label.textContent = labelText;
-    const filterButton = document.createElement('button');
-    filterButton.className = 'status-filter-button';
-    filterButton.type = 'button';
-    const filterLabel = 'Filter ' + labelText + ' values';
-    filterButton.title = filterLabel;
-    filterButton.setAttribute('aria-label', filterLabel);
-    filterButton.addEventListener('click', event => {
-      event.stopPropagation();
-      const menu = wrapper.querySelector('.status-filter-menu');
-      menu.hidden = !menu.hidden;
-    });
-    wrapper.append(label, filterButton);
-    wrapper.appendChild(field === 'status'
-      ? buildStatusFilterMenu(filterButton)
-      : buildCollectionFilterMenu(filterButton));
-    container.appendChild(wrapper);
-  });
-}
-
-function buildStatusFilterMenu(filterButton) {
+function buildFilterMenu(field, title, filterButton) {
   const menu = document.createElement('div');
-  menu.className = 'status-filter-menu';
+  menu.className = 'header-filter-menu';
   menu.hidden = true;
   menu.addEventListener('click', event => event.stopPropagation());
-  const title = document.createElement('div');
-  title.className = 'status-filter-menu-title';
-  title.textContent = 'Status';
-  menu.appendChild(title);
-  const statusValues = [...new Set(allGames.map(game => game.status).filter(Boolean))].sort();
-  statusValues.forEach(status => {
-    const option = document.createElement('label');
-    option.className = 'status-filter-option';
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.value = status;
-    checkbox.checked = selectedStatusValues === null || selectedStatusValues.has(status);
-    checkbox.addEventListener('change', event => {
-      event.stopPropagation();
-      const selected = new Set(
-        [...menu.querySelectorAll('input:checked')].map(input => input.value)
-      );
-      selectedStatusValues = selected.size === statusValues.length ? null : selected;
-      filterButton.classList.toggle('active', selectedStatusValues !== null);
-      render();
-    });
-    option.appendChild(checkbox);
-    option.append(status);
-    menu.appendChild(option);
-  });
-  filterButton.classList.toggle('active', selectedStatusValues !== null);
-  return menu;
-}
+  const values = field === 'status'
+    ? [...new Set(allGames.map(game => game.status).filter(Boolean))].sort()
+    : [...new Set(allGames.flatMap(game => game.in_collection))].sort();
+  const selectedValues = field === 'status' ? selectedStatusValues : selectedCollectionValues;
 
-function buildCollectionFilterMenu(filterButton) {
-  const menu = document.createElement('div');
-  menu.className = 'status-filter-menu';
-  menu.hidden = true;
-  menu.addEventListener('click', event => event.stopPropagation());
-  const title = document.createElement('div');
-  title.className = 'status-filter-menu-title';
-  title.textContent = 'In Collection';
-  menu.appendChild(title);
-  const collectionValues = [...new Set(allGames.flatMap(game => game.in_collection))].sort();
-  collectionValues.forEach(value => {
+  const search = document.createElement('input');
+  search.className = 'header-filter-search';
+  search.type = 'search';
+  search.placeholder = 'Find';
+  search.setAttribute('aria-label', `Find ${title}`);
+  menu.appendChild(search);
+
+  const options = document.createElement('div');
+  const selectAll = document.createElement('label');
+  selectAll.className = 'header-filter-option header-filter-select-all';
+  const selectAllInput = document.createElement('input');
+  selectAllInput.type = 'checkbox';
+  selectAllInput.checked = selectedValues === null;
+  selectAll.appendChild(selectAllInput);
+  selectAll.append('Select All');
+  options.appendChild(selectAll);
+
+  const checkboxes = [];
+  values.forEach(value => {
     const option = document.createElement('label');
-    option.className = 'status-filter-option';
+    option.className = 'header-filter-option';
+    option.dataset.value = value.toLowerCase();
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.value = value;
-    checkbox.checked = selectedCollectionValues === null || selectedCollectionValues.has(value);
-    checkbox.addEventListener('change', event => {
-      event.stopPropagation();
-      const selected = new Set(
-        [...menu.querySelectorAll('input:checked')].map(input => input.value)
-      );
-      selectedCollectionValues = selected.size === collectionValues.length ? null : selected;
-      filterButton.classList.toggle('active', selectedCollectionValues !== null);
-      render();
-    });
+    checkbox.checked = selectedValues === null || selectedValues.has(value);
     option.appendChild(checkbox);
     option.append(value);
-    menu.appendChild(option);
+    options.appendChild(option);
+    checkboxes.push(checkbox);
   });
-  filterButton.classList.toggle('active', selectedCollectionValues !== null);
+  menu.appendChild(options);
+
+  function updateSelection() {
+    const selected = new Set(checkboxes.filter(input => input.checked).map(input => input.value));
+    const nextValues = selected.size === values.length ? null : selected;
+    if (field === 'status') selectedStatusValues = nextValues;
+    else selectedCollectionValues = nextValues;
+    selectAllInput.checked = nextValues === null;
+    filterButton.classList.toggle('active', nextValues !== null);
+    filterButton.textContent = nextValues === null
+      ? `All ${values.length} selected`
+      : `${selected.size} of ${values.length} selected`;
+    render();
+  }
+
+  selectAllInput.addEventListener('change', () => {
+    checkboxes.forEach(input => { input.checked = selectAllInput.checked; });
+    updateSelection();
+  });
+  checkboxes.forEach(input => input.addEventListener('change', updateSelection));
+  search.addEventListener('input', () => {
+    const query = search.value.trim().toLowerCase();
+    options.querySelectorAll('.header-filter-option:not(.header-filter-select-all)').forEach(option => {
+      option.hidden = query !== '' && !option.dataset.value.includes(query);
+    });
+  });
+
+  filterButton.addEventListener('click', event => {
+    event.stopPropagation();
+    menu.hidden = !menu.hidden;
+    if (!menu.hidden) search.focus();
+  });
+  filterButton.textContent = selectedValues === null
+    ? `All ${values.length} selected`
+    : `${selectedValues.size} of ${values.length} selected`;
+  filterButton.classList.toggle('active', selectedValues !== null);
   return menu;
 }
 
+function buildStatusFilterMenu(filterButton) {
+  return buildFilterMenu('status', 'Status', filterButton);
+}
+
+function buildCollectionFilterMenu(filterButton) {
+  return buildFilterMenu('in_collection', 'In Collection', filterButton);
+}
+
 document.addEventListener('click', event => {
-  if (event.target.closest('.status-filter-menu') || event.target.closest('.status-filter-button')) return;
-  document.querySelectorAll('.status-filter-menu:not([hidden])').forEach(menu => {
+  if (event.target.closest('.header-filter-menu') || event.target.closest('.header-filter-button')) return;
+  document.querySelectorAll('.header-filter-menu:not([hidden])').forEach(menu => {
     menu.hidden = true;
   });
 });
+
+function buildHeaderFilters() {
+  const statusControl = document.getElementById('statusFilterControl');
+  const collectionControl = document.getElementById('collectionFilterControl');
+  [
+    ['Status', 'status', statusControl],
+    ['In Collection', 'in_collection', collectionControl]
+  ].forEach(([title, field, control]) => {
+    control.innerHTML = '';
+    const titleElement = document.createElement('span');
+    titleElement.className = 'header-filter-title';
+    titleElement.textContent = title;
+    control.appendChild(titleElement);
+    const button = document.createElement('button');
+    button.className = 'header-filter-button';
+    button.type = 'button';
+    button.setAttribute('aria-label', `Filter ${title}`);
+    control.appendChild(button);
+    control.appendChild(field === 'status'
+      ? buildStatusFilterMenu(button)
+      : buildCollectionFilterMenu(button));
+  });
+}
 
 function buildFilterRow() {
   const row = document.getElementById('filterRow');
@@ -1063,6 +1106,7 @@ function loadData() {
       let joinedRows = addJoinedColumns(collectionRows, rankRows, 'boardgames_ranks', 'id');
       joinedRows = addJoinedColumns(joinedRows, detailRows, 'collectiondetails2026', 'objectid');
       allGames = joinedRows.map(normalizeCsvRow);
+      buildHeaderFilters();
       buildHeader();
       const viewSelect = document.getElementById('viewSelect');
       viewSelect.addEventListener('change', (event) => {
