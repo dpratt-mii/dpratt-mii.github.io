@@ -94,11 +94,13 @@
   th.sort-asc .col-label::after { content: '\25b2'; }
   th.sort-desc .col-label::after { content: '\25bc'; }
   .status-filter-button {
-    display: inline-grid;
-    width: 22px;
+    display: inline-flex;
+    width: auto;
     height: 22px;
     margin-left: 5px;
-    padding: 0;
+    padding: 0 6px;
+    align-items: center;
+    gap: 4px;
     place-items: center;
     border: 1px solid #075bbb;
     border-radius: 3px;
@@ -107,7 +109,8 @@
     cursor: pointer;
     vertical-align: middle;
   }
-  .status-filter-button::before { content: '\25bc'; font-size: 12px; }
+  .status-filter-button::before { content: 'Filter'; font-size: 12px; }
+  .status-filter-button::after { content: '\25bc'; font-size: 10px; }
   .status-filter-button.active { color: #fff; background: #075bbb; }
   .status-filter-header { overflow: visible; }
   .status-filter-menu {
@@ -635,8 +638,8 @@ function buildHeader() {
       const filterButton = document.createElement('button');
       filterButton.className = 'status-filter-button';
       filterButton.type = 'button';
-      filterButton.title = 'Filter status';
-      filterButton.setAttribute('aria-label', 'Filter status');
+      filterButton.title = 'Filter In Collection values';
+      filterButton.setAttribute('aria-label', 'Filter In Collection values');
       filterButton.addEventListener('click', event => {
         event.stopPropagation();
         const menu = th.querySelector('.status-filter-menu');
