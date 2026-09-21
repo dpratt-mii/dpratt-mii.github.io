@@ -68,6 +68,7 @@
   .view-collection-table tbody td.status-cell,
   .view-collection-table tbody td.plays-cell { text-align: center; }
   .view-collection-table tbody td.status-cell { font-weight: 400; }
+  .view-collection-table tbody td.in-collection-cell { white-space: normal; line-height: 1.3; }
   .view-collection-table tbody td.status-cell.owned { color: #111; }
   .view-collection-table tbody td.status-cell.prev-owned { color: #14149b; }
   .view-collection-table tbody td.comment-cell {
@@ -138,17 +139,18 @@
   body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(2) { width: 102px !important; }
   body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(3) { width: 94px !important; }
   body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(4) { width: 190px !important; }
-  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(5) { width: 96px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(5) { width: 180px !important; }
   body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(6) { width: 96px !important; }
-  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(7) { width: 390px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(7) { width: 96px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(8) { width: 390px !important; }
   body.collection-view.thumbnail-view .view-collection-table col:nth-child(1) { width: 125px !important; }
   body.collection-view.thumbnail-view .view-collection-table col:nth-child(2) { width: 225px !important; }
   body.collection-view.thumbnail-view .view-collection-table col:nth-child(3) { width: 102px !important; }
   body.collection-view.thumbnail-view .view-collection-table col:nth-child(4) { width: 94px !important; }
-  body.collection-view.thumbnail-view .view-collection-table col:nth-child(5) { width: 190px !important; }
-  body.collection-view.thumbnail-view .view-collection-table col:nth-child(6) { width: 96px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(5) { width: 180px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(6) { width: 190px !important; }
   body.collection-view.thumbnail-view .view-collection-table col:nth-child(7) { width: 96px !important; }
-  body.collection-view.thumbnail-view .view-collection-table col:nth-child(8) { width: 390px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(8) { width: 96px !important; }
   body.collection-view.thumbnail-view .view-collection-table col:nth-child(9) { width: 390px !important; }
   .thumbnail-cell { padding: 8px !important; text-align: center; vertical-align: middle !important; }
   .collection-thumbnail { display: block; width: 100px; height: 120px; margin: 0 auto; object-fit: cover; }
@@ -398,6 +400,7 @@ const COLLECTION_COLUMNS = [
   { header: 'Title',        field: 'game_name' },
   { header: 'Geek Rating',  field: 'bgg_rating' },
   { header: 'Status',       field: 'status' },
+  { header: 'In Collection', field: 'in_collection' },
   { header: 'Min Players',  field: 'min_players' },
   { header: 'Max Players',  field: 'max_players' },
   { header: 'Comment',      field: 'comment' }
@@ -410,7 +413,8 @@ const RANK_ID_FIELD = 'boardgames_ranks.id';
 
 let activeView = 'collection';
 let thumbnailEnabled = true;
-let selectedStatusValues = new Set(['Owned']);
+let selectedCollectionValues = null;
+const COLLECTION_FLAGS = ['own', 'fortrade', 'want', 'wanttobuy', 'wanttoplay', 'prevowned', 'preordered', 'wishlist'];
 const WRAP_FIELDS = new Set(['description', 'categories', 'mechanics', 'alternate_names', 'families', 'publishers']);
 
 function getActiveColumns() {
@@ -512,8 +516,13 @@ function getStatus(row) {
   return '';
 }
 
+function getCollectionValues(row) {
+  return COLLECTION_FLAGS.filter(flag => row[flag] === '1');
+}
+
 function normalizeCsvRow(row) {
   const status = getStatus(row);
+  const inCollection = getCollectionValues(row);
   const comment = row.comment || row.privatecomment || '';
   const normalized = {
     game_name: row.objectname || row.originalname || '',
@@ -530,6 +539,7 @@ function normalizeCsvRow(row) {
     rating: toNumber(row.rating),
     numplays: toNumber(row.numplays),
     status,
+    in_collection: inCollection,
     comment,
     categories: '',
     mechanics: '',
@@ -582,8 +592,8 @@ function buildColGroup(columns = getActiveColumns()) {
   const frag = document.createDocumentFragment();
   const collectionWidths = activeView === 'collection'
     ? thumbnailEnabled
-      ? [125, 225, 102, 94, 190, 96, 96, 390]
-      : [225, 102, 94, 190, 96, 96, 390]
+      ? [125, 225, 102, 94, 180, 190, 96, 96, 390]
+      : [225, 102, 94, 180, 190, 96, 96, 390]
     : thumbnailEnabled ? [125] : [];
   columns.forEach((_, index) => {
     const col = document.createElement('col');
@@ -620,7 +630,7 @@ function buildHeader() {
     label.textContent = col.header;
     label.addEventListener('click', () => sortByColumn(index));
     th.appendChild(label);
-    if (activeView === 'collection' && col.field === 'status') {
+    if (activeView === 'collection' && col.field === 'in_collection') {
       th.classList.add('status-filter-header');
       const filterButton = document.createElement('button');
       filterButton.className = 'status-filter-button';
@@ -633,7 +643,7 @@ function buildHeader() {
         menu.hidden = !menu.hidden;
       });
       th.appendChild(filterButton);
-      th.appendChild(buildStatusFilterMenu(filterButton));
+      th.appendChild(buildCollectionFilterMenu(filterButton));
     }
     const resizer = document.createElement('div');
     resizer.className = 'col-resizer';
@@ -649,32 +659,32 @@ let allGames = [];
 const sortState = { colIndex: null, dir: 1 };
 const filters = {};
 
-function buildStatusFilterMenu(filterButton) {
+function buildCollectionFilterMenu(filterButton) {
   const menu = document.createElement('div');
   menu.className = 'status-filter-menu';
   menu.hidden = true;
   menu.addEventListener('click', event => event.stopPropagation());
-  const statusValues = [...new Set(allGames.map(game => game.status).filter(Boolean))].sort();
-  statusValues.forEach(status => {
+  const collectionValues = [...new Set(allGames.flatMap(game => game.in_collection))].sort();
+  collectionValues.forEach(value => {
     const option = document.createElement('label');
     option.className = 'status-filter-option';
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
-    checkbox.value = status;
-    checkbox.checked = selectedStatusValues === null || selectedStatusValues.has(status);
+    checkbox.value = value;
+    checkbox.checked = selectedCollectionValues === null || selectedCollectionValues.has(value);
     checkbox.addEventListener('change', () => {
       const selected = new Set(
         [...menu.querySelectorAll('input:checked')].map(input => input.value)
       );
-      selectedStatusValues = selected.size === statusValues.length ? null : selected;
-      filterButton.classList.toggle('active', selectedStatusValues !== null);
+      selectedCollectionValues = selected.size === collectionValues.length ? null : selected;
+      filterButton.classList.toggle('active', selectedCollectionValues !== null);
       render();
     });
     option.appendChild(checkbox);
-    option.append(status);
+    option.append(value);
     menu.appendChild(option);
   });
-  filterButton.classList.toggle('active', selectedStatusValues !== null);
+  filterButton.classList.toggle('active', selectedCollectionValues !== null);
   return menu;
 }
 
@@ -731,7 +741,8 @@ function render() {
       return cell !== null && cell !== undefined && String(cell).toLowerCase().includes(value);
     });
   })
-    .filter(game => selectedStatusValues === null || selectedStatusValues.has(game.status));
+    .filter(game => selectedCollectionValues === null
+      || game.in_collection.some(value => selectedCollectionValues.has(value)));
 
   if (sortState.colIndex !== null && columns[sortState.colIndex]) {
     const col = columns[sortState.colIndex];
@@ -917,6 +928,9 @@ function buildRows(games) {
           if (value === 'Owned') td.classList.add('owned');
           if (value === 'Prev. Owned') td.classList.add('prev-owned');
           td.textContent = value;
+        } else if (activeView === 'collection' && col.field === 'in_collection') {
+          td.classList.add('in-collection-cell');
+          td.textContent = value.join(', ');
         } else if (activeView === 'collection' && col.field === 'numplays') {
           td.classList.add('plays-cell');
           td.textContent = value === null ? '' : value;
