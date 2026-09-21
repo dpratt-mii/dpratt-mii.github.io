@@ -5,13 +5,13 @@
 <title>OurBGG</title>
 <style>
   body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
-  header { padding: 12px 16px; background: #2b2f38; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  header { position: relative; z-index: 10; padding: 12px 16px; background: #2b2f38; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .header-brand { display: grid; gap: 5px; }
   header h1 { margin: 0; font-size: 18px; }
   .view-selector { display: flex; align-items: center; gap: 8px; font-size: 13px; }
   .view-toggle { display: flex; align-items: center; justify-content: flex-end; gap: 10px; font-size: 13px; }
   .header-filters { display: flex; align-items: center; gap: 6px; }
-  .header-filter { display: inline-flex; align-items: center; gap: 4px; color: #fff; }
+  .header-filter { position: relative; display: inline-flex; min-width: 150px; align-items: center; justify-content: space-between; gap: 8px; color: #fff; }
   .header-filter-label { font-weight: 600; }
   .view-selector label { font-weight: 600; }
   .view-selector select { padding: 6px 10px; border-radius: 4px; border: 1px solid #d0d7de; font-size: 13px; }
@@ -127,9 +127,9 @@
     position: absolute;
     top: calc(100% - 1px);
     right: 4px;
-    z-index: 4;
+    z-index: 20;
     display: grid;
-    min-width: 170px;
+    min-width: 240px;
     gap: 6px;
     padding: 10px;
     border: 1px solid #b7c0cc;
@@ -141,6 +141,7 @@
     font-weight: 400;
     text-align: left;
   }
+  .header-filter .status-filter-menu { top: calc(100% + 4px); right: 0; }
   .status-filter-menu[hidden] { display: none; }
   .status-filter-option { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
   .status-filter-option input { margin: 0; }
@@ -710,7 +711,8 @@ function buildStatusFilterMenu(filterButton) {
     checkbox.type = 'checkbox';
     checkbox.value = status;
     checkbox.checked = selectedStatusValues === null || selectedStatusValues.has(status);
-    checkbox.addEventListener('change', () => {
+    checkbox.addEventListener('change', event => {
+      event.stopPropagation();
       const selected = new Set(
         [...menu.querySelectorAll('input:checked')].map(input => input.value)
       );
@@ -739,7 +741,8 @@ function buildCollectionFilterMenu(filterButton) {
     checkbox.type = 'checkbox';
     checkbox.value = value;
     checkbox.checked = selectedCollectionValues === null || selectedCollectionValues.has(value);
-    checkbox.addEventListener('change', () => {
+    checkbox.addEventListener('change', event => {
+      event.stopPropagation();
       const selected = new Set(
         [...menu.querySelectorAll('input:checked')].map(input => input.value)
       );
