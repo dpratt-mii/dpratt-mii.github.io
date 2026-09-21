@@ -416,6 +416,7 @@ const RANK_ID_FIELD = 'boardgames_ranks.id';
 
 let activeView = 'collection';
 let thumbnailEnabled = true;
+let selectedStatusValues = new Set(['Owned']);
 let selectedCollectionValues = null;
 const COLLECTION_FLAGS = ['own', 'fortrade', 'want', 'wanttobuy', 'wanttoplay', 'prevowned', 'preordered', 'wishlist'];
 const WRAP_FIELDS = new Set(['description', 'categories', 'mechanics', 'alternate_names', 'families', 'publishers']);
@@ -633,20 +634,23 @@ function buildHeader() {
     label.textContent = col.header;
     label.addEventListener('click', () => sortByColumn(index));
     th.appendChild(label);
-    if (activeView === 'collection' && col.field === 'in_collection') {
+    if (activeView === 'collection' && (col.field === 'status' || col.field === 'in_collection')) {
       th.classList.add('status-filter-header');
       const filterButton = document.createElement('button');
       filterButton.className = 'status-filter-button';
       filterButton.type = 'button';
-      filterButton.title = 'Filter In Collection values';
-      filterButton.setAttribute('aria-label', 'Filter In Collection values');
+      const filterLabel = col.field === 'status' ? 'Filter status values' : 'Filter In Collection values';
+      filterButton.title = filterLabel;
+      filterButton.setAttribute('aria-label', filterLabel);
       filterButton.addEventListener('click', event => {
         event.stopPropagation();
         const menu = th.querySelector('.status-filter-menu');
         menu.hidden = !menu.hidden;
       });
       th.appendChild(filterButton);
-      th.appendChild(buildCollectionFilterMenu(filterButton));
+      th.appendChild(col.field === 'status'
+        ? buildStatusFilterMenu(filterButton)
+        : buildCollectionFilterMenu(filterButton));
     }
     const resizer = document.createElement('div');
     resizer.className = 'col-resizer';
@@ -688,6 +692,35 @@ function buildCollectionFilterMenu(filterButton) {
     menu.appendChild(option);
   });
   filterButton.classList.toggle('active', selectedCollectionValues !== null);
+  return menu;
+}
+
+function buildStatusFilterMenu(filterButton) {
+  const menu = document.createElement('div');
+  menu.className = 'status-filter-menu';
+  menu.hidden = true;
+  menu.addEventListener('click', event => event.stopPropagation());
+  const statusValues = [...new Set(allGames.map(game => game.status).filter(Boolean))].sort();
+  statusValues.forEach(status => {
+    const option = document.createElement('label');
+    option.className = 'status-filter-option';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = status;
+    checkbox.checked = selectedStatusValues === null || selectedStatusValues.has(status);
+    checkbox.addEventListener('change', () => {
+      const selected = new Set(
+        [...menu.querySelectorAll('input:checked')].map(input => input.value)
+      );
+      selectedStatusValues = selected.size === statusValues.length ? null : selected;
+      filterButton.classList.toggle('active', selectedStatusValues !== null);
+      render();
+    });
+    option.appendChild(checkbox);
+    option.append(status);
+    menu.appendChild(option);
+  });
+  filterButton.classList.toggle('active', selectedStatusValues !== null);
   return menu;
 }
 
@@ -745,7 +778,8 @@ function render() {
     });
   })
     .filter(game => selectedCollectionValues === null
-      || game.in_collection.some(value => selectedCollectionValues.has(value)));
+      || game.in_collection.some(value => selectedCollectionValues.has(value)))
+    .filter(game => selectedStatusValues === null || selectedStatusValues.has(game.status));
 
   if (sortState.colIndex !== null && columns[sortState.colIndex]) {
     const col = columns[sortState.colIndex];
