@@ -6,10 +6,15 @@
 <style>
   body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
   header { padding: 12px 16px; background: #2b2f38; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .header-brand { display: grid; gap: 5px; }
   header h1 { margin: 0; font-size: 18px; }
-  .view-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-  .view-toggle label { font-weight: 600; }
-  .view-toggle select { padding: 6px 10px; border-radius: 4px; border: 1px solid #d0d7de; font-size: 13px; }
+  .view-selector { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .view-toggle { display: flex; align-items: center; justify-content: flex-end; gap: 10px; font-size: 13px; }
+  .header-filters { display: flex; align-items: center; gap: 6px; }
+  .header-filter { display: inline-flex; align-items: center; gap: 4px; color: #fff; }
+  .header-filter-label { font-weight: 600; }
+  .view-selector label { font-weight: 600; }
+  .view-selector select { padding: 6px 10px; border-radius: 4px; border: 1px solid #d0d7de; font-size: 13px; }
   .thumbnail-toggle { display: inline-flex; align-items: center; gap: 5px; color: #fff; cursor: pointer; }
   .thumbnail-toggle input { width: 16px; height: 16px; margin: 0; accent-color: #fff; }
   #status { padding: 8px 16px; font-size: 13px; color: #444; }
@@ -18,7 +23,7 @@
   body.collection-view > header h1,
   body.collection-view > header .view-toggle label { color: #fff; }
   body.collection-view > header h1 { font-size: 16px; }
-  body.collection-view > header .view-toggle select { padding: 4px 8px; }
+  body.collection-view > header .view-selector select { padding: 4px 8px; }
   body.collection-view #status {
     box-sizing: border-box;
     margin: 0 0 4px;
@@ -281,13 +286,18 @@
 </head>
 <body>
 <header>
-  <h1>Our BGG Collection</h1>
+  <div class="header-brand">
+    <h1>Our BGG Collection</h1>
+    <div class="view-selector">
+      <label for="viewSelect">View</label>
+      <select id="viewSelect" aria-label="View">
+        <option value="collection" selected>Collection View</option>
+        <option value="detailed">Detailed View</option>
+      </select>
+    </div>
+  </div>
   <div class="view-toggle">
-    <label for="viewSelect">View</label>
-    <select id="viewSelect" aria-label="View">
-      <option value="collection" selected>Collection View</option>
-      <option value="detailed">Detailed View</option>
-    </select>
+    <div class="header-filters" id="headerFilters"></div>
     <label class="thumbnail-toggle" for="thumbnailToggle">
       <input id="thumbnailToggle" type="checkbox" aria-label="Thumbnail" checked>
       Thumbnail
@@ -639,24 +649,6 @@ function buildHeader() {
     label.textContent = col.header;
     label.addEventListener('click', () => sortByColumn(index));
     th.appendChild(label);
-    if (activeView === 'collection' && (col.field === 'status' || col.field === 'in_collection')) {
-      th.classList.add('status-filter-header');
-      const filterButton = document.createElement('button');
-      filterButton.className = 'status-filter-button';
-      filterButton.type = 'button';
-      const filterLabel = col.field === 'status' ? 'Filter status values' : 'Filter In Collection values';
-      filterButton.title = filterLabel;
-      filterButton.setAttribute('aria-label', filterLabel);
-      filterButton.addEventListener('click', event => {
-        event.stopPropagation();
-        const menu = th.querySelector('.status-filter-menu');
-        menu.hidden = !menu.hidden;
-      });
-      th.appendChild(filterButton);
-      th.appendChild(col.field === 'status'
-        ? buildStatusFilterMenu(filterButton)
-        : buildCollectionFilterMenu(filterButton));
-    }
     const resizer = document.createElement('div');
     resizer.className = 'col-resizer';
     th.appendChild(resizer);
@@ -665,11 +657,45 @@ function buildHeader() {
   row.appendChild(frag);
   enableColumnResize(row);
   buildFilterRow();
+  buildHeaderFilters();
 }
 
 let allGames = [];
 const sortState = { colIndex: null, dir: 1 };
 const filters = {};
+
+function buildHeaderFilters() {
+  const container = document.getElementById('headerFilters');
+  container.innerHTML = '';
+  if (activeView !== 'collection') return;
+
+  [
+    ['Status', 'status'],
+    ['In Collection', 'in_collection']
+  ].forEach(([labelText, field]) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'header-filter';
+    const label = document.createElement('span');
+    label.className = 'header-filter-label';
+    label.textContent = labelText;
+    const filterButton = document.createElement('button');
+    filterButton.className = 'status-filter-button';
+    filterButton.type = 'button';
+    const filterLabel = 'Filter ' + labelText + ' values';
+    filterButton.title = filterLabel;
+    filterButton.setAttribute('aria-label', filterLabel);
+    filterButton.addEventListener('click', event => {
+      event.stopPropagation();
+      const menu = wrapper.querySelector('.status-filter-menu');
+      menu.hidden = !menu.hidden;
+    });
+    wrapper.append(label, filterButton);
+    wrapper.appendChild(field === 'status'
+      ? buildStatusFilterMenu(filterButton)
+      : buildCollectionFilterMenu(filterButton));
+    container.appendChild(wrapper);
+  });
+}
 
 function buildStatusFilterMenu(filterButton) {
   const menu = document.createElement('div');
