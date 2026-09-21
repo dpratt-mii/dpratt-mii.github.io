@@ -95,12 +95,11 @@
   th.sort-desc .col-label::after { content: '\25bc'; }
   .status-filter-button {
     display: inline-flex;
-    width: auto;
+    width: 28px;
     height: 22px;
     margin-left: 5px;
-    padding: 0 6px;
+    padding: 0;
     align-items: center;
-    gap: 4px;
     place-items: center;
     border: 1px solid #075bbb;
     border-radius: 3px;
@@ -109,8 +108,13 @@
     cursor: pointer;
     vertical-align: middle;
   }
-  .status-filter-button::before { content: 'Filter'; font-size: 12px; }
-  .status-filter-button::after { content: '\25bc'; font-size: 10px; }
+  .status-filter-button::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    background: currentColor;
+    clip-path: polygon(0 0, 100% 0, 63% 47%, 63% 75%, 37% 100%, 37% 47%);
+  }
   .status-filter-button.active { color: #fff; background: #075bbb; }
   .status-filter-header { overflow: visible; }
   .status-filter-menu {
