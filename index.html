@@ -143,6 +143,12 @@
   }
   .header-filter .status-filter-menu { top: calc(100% + 4px); right: 0; }
   .status-filter-menu[hidden] { display: none; }
+  .status-filter-menu-title {
+    padding-bottom: 4px;
+    border-bottom: 1px solid #d9dee5;
+    color: #333;
+    font-weight: 700;
+  }
   .status-filter-option { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
   .status-filter-option input { margin: 0; }
   #filterRow th { top: 27px; padding: 2px 4px; }
@@ -703,6 +709,10 @@ function buildStatusFilterMenu(filterButton) {
   menu.className = 'status-filter-menu';
   menu.hidden = true;
   menu.addEventListener('click', event => event.stopPropagation());
+  const title = document.createElement('div');
+  title.className = 'status-filter-menu-title';
+  title.textContent = 'Status';
+  menu.appendChild(title);
   const statusValues = [...new Set(allGames.map(game => game.status).filter(Boolean))].sort();
   statusValues.forEach(status => {
     const option = document.createElement('label');
@@ -733,6 +743,10 @@ function buildCollectionFilterMenu(filterButton) {
   menu.className = 'status-filter-menu';
   menu.hidden = true;
   menu.addEventListener('click', event => event.stopPropagation());
+  const title = document.createElement('div');
+  title.className = 'status-filter-menu-title';
+  title.textContent = 'In Collection';
+  menu.appendChild(title);
   const collectionValues = [...new Set(allGames.flatMap(game => game.in_collection))].sort();
   collectionValues.forEach(value => {
     const option = document.createElement('label');
