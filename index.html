@@ -33,7 +33,7 @@
     background: #fff;
     color: #075bbb;
     border-color: #cfd4da;
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 700;
     text-align: center;
     white-space: normal;
@@ -92,68 +92,63 @@
   .col-label::after { content: ''; display: inline-block; width: 10px; }
   th.sort-asc .col-label::after { content: '\25b2'; }
   th.sort-desc .col-label::after { content: '\25bc'; }
-  th.status-filter-header { overflow: visible; }
   .status-filter-button {
     display: inline-grid;
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     margin-left: 5px;
-    padding: 3px;
+    padding: 0;
     place-items: center;
-    border: 0;
+    border: 1px solid #075bbb;
     border-radius: 3px;
-    background: transparent;
+    color: #075bbb;
+    background: #fff;
     cursor: pointer;
     vertical-align: middle;
   }
-  .status-filter-button:hover,
-  .status-filter-button:focus { background: #e7effb; outline: 1px solid #075bbb; }
-  .status-filter-icon {
-    display: block;
-    width: 15px;
-    height: 15px;
-    background: #075bbb;
-    clip-path: polygon(0 0, 100% 0, 63% 45%, 63% 100%, 37% 100%, 37% 45%);
-  }
+  .status-filter-button::before { content: '\25bc'; font-size: 12px; }
+  .status-filter-button.active { color: #fff; background: #075bbb; }
+  .status-filter-header { overflow: visible; }
   .status-filter-menu {
     position: absolute;
     top: calc(100% - 1px);
-    right: 8px;
-    z-index: 5;
+    right: 4px;
+    z-index: 4;
     display: grid;
-    min-width: 180px;
-    padding: 8px;
-    border: 1px solid #b9c2ce;
+    min-width: 170px;
+    gap: 6px;
+    padding: 10px;
+    border: 1px solid #b7c0cc;
     border-radius: 3px;
-    background: #fff;
-    box-shadow: 0 5px 14px rgba(0, 0, 0, .2);
     color: #111;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .2);
     font-size: 14px;
     font-weight: 400;
     text-align: left;
   }
-  .status-filter-option { display: flex; align-items: center; gap: 7px; padding: 5px 4px; white-space: nowrap; }
-  .status-filter-option input { width: 15px; height: 15px; margin: 0; }
+  .status-filter-menu[hidden] { display: none; }
+  .status-filter-option { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+  .status-filter-option input { margin: 0; }
   #filterRow th { top: 27px; padding: 2px 4px; }
   #filterRow input { width: 100%; box-sizing: border-box; font-size: 12px; padding: 2px 4px; }
   body.collection-view #filterRow { display: none; }
   body.collection-view .view-collection-table { table-layout: fixed; }
   body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(1) { width: 225px !important; }
-  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(2) { width: 120px !important; }
-  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(3) { width: 120px !important; }
-  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(4) { width: 111px !important; }
-  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(5) { width: 120px !important; }
-  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(6) { width: 190px !important; }
-  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(7) { width: 120px !important; }
-  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(8) { width: 390px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(2) { width: 102px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(3) { width: 94px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(4) { width: 190px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(5) { width: 96px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(6) { width: 96px !important; }
+  body.collection-view:not(.thumbnail-view) .view-collection-table col:nth-child(7) { width: 390px !important; }
   body.collection-view.thumbnail-view .view-collection-table col:nth-child(1) { width: 125px !important; }
   body.collection-view.thumbnail-view .view-collection-table col:nth-child(2) { width: 225px !important; }
-  body.collection-view.thumbnail-view .view-collection-table col:nth-child(3) { width: 120px !important; }
-  body.collection-view.thumbnail-view .view-collection-table col:nth-child(4) { width: 120px !important; }
-  body.collection-view.thumbnail-view .view-collection-table col:nth-child(5) { width: 111px !important; }
-  body.collection-view.thumbnail-view .view-collection-table col:nth-child(6) { width: 120px !important; }
-  body.collection-view.thumbnail-view .view-collection-table col:nth-child(7) { width: 190px !important; }
-  body.collection-view.thumbnail-view .view-collection-table col:nth-child(8) { width: 120px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(3) { width: 102px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(4) { width: 94px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(5) { width: 190px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(6) { width: 96px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(7) { width: 96px !important; }
+  body.collection-view.thumbnail-view .view-collection-table col:nth-child(8) { width: 390px !important; }
   body.collection-view.thumbnail-view .view-collection-table col:nth-child(9) { width: 390px !important; }
   .thumbnail-cell { padding: 8px !important; text-align: center; vertical-align: middle !important; }
   .collection-thumbnail { display: block; width: 100px; height: 120px; margin: 0 auto; object-fit: cover; }
@@ -284,7 +279,7 @@
       <option value="detailed">Detailed View</option>
     </select>
     <label class="thumbnail-toggle" for="thumbnailToggle">
-      <input id="thumbnailToggle" type="checkbox" aria-label="Thumbnail">
+      <input id="thumbnailToggle" type="checkbox" aria-label="Thumbnail" checked>
       Thumbnail
     </label>
   </div>
@@ -402,9 +397,9 @@ const BGG_COLUMNS = [
 const COLLECTION_COLUMNS = [
   { header: 'Title',        field: 'game_name' },
   { header: 'Geek Rating',  field: 'bgg_rating' },
-  { header: 'Your Rating',  field: 'rating' },
   { header: 'Status',       field: 'status' },
-  { header: 'Your Plays',   field: 'numplays' },
+  { header: 'Min Players',  field: 'min_players' },
+  { header: 'Max Players',  field: 'max_players' },
   { header: 'Comment',      field: 'comment' }
 ];
 
@@ -414,7 +409,8 @@ const VALUE3_FIELD = 'collectiondetails2026.value3';
 const RANK_ID_FIELD = 'boardgames_ranks.id';
 
 let activeView = 'collection';
-let thumbnailEnabled = false;
+let thumbnailEnabled = true;
+let selectedStatusValues = new Set(['Owned']);
 const WRAP_FIELDS = new Set(['description', 'categories', 'mechanics', 'alternate_names', 'families', 'publishers']);
 
 function getActiveColumns() {
@@ -424,13 +420,12 @@ function getActiveColumns() {
     return thumbnailEnabled ? [THUMBNAIL_COLUMN, ...activeColumns] : activeColumns;
   }
   const value3Column = ADDITIONAL_COLUMNS.find(column => column.field === VALUE3_FIELD);
-  const rankIdColumn = ADDITIONAL_COLUMNS.find(column => column.field === RANK_ID_FIELD);
-  const remainingAdditionalColumns = ADDITIONAL_COLUMNS.filter(column =>
-    column.field !== VALUE3_FIELD && column.field !== RANK_ID_FIELD
-  );
-  const collectionColumns = rankIdColumn && value3Column
-    ? [COLLECTION_COLUMNS[0], rankIdColumn, value3Column, ...COLLECTION_COLUMNS.slice(1), ...remainingAdditionalColumns]
-    : activeColumns;
+  const averageRatingColumn = value3Column
+    ? { ...value3Column, header: 'Average Rating' }
+    : null;
+  const collectionColumns = value3Column
+    ? [COLLECTION_COLUMNS[0], averageRatingColumn, ...COLLECTION_COLUMNS.slice(1)]
+    : COLLECTION_COLUMNS;
   return thumbnailEnabled ? [THUMBNAIL_COLUMN, ...collectionColumns] : collectionColumns;
 }
 
@@ -587,8 +582,8 @@ function buildColGroup(columns = getActiveColumns()) {
   const frag = document.createDocumentFragment();
   const collectionWidths = activeView === 'collection'
     ? thumbnailEnabled
-      ? [125, 225, 120, 120, 111, 120, 190, 120, 390]
-      : [225, 120, 120, 111, 120, 190, 120, 390]
+      ? [125, 225, 102, 94, 190, 96, 96, 390]
+      : [225, 102, 94, 190, 96, 96, 390]
     : thumbnailEnabled ? [125] : [];
   columns.forEach((_, index) => {
     const col = document.createElement('col');
@@ -626,7 +621,19 @@ function buildHeader() {
     label.addEventListener('click', () => sortByColumn(index));
     th.appendChild(label);
     if (activeView === 'collection' && col.field === 'status') {
-      buildStatusFilter(th);
+      th.classList.add('status-filter-header');
+      const filterButton = document.createElement('button');
+      filterButton.className = 'status-filter-button';
+      filterButton.type = 'button';
+      filterButton.title = 'Filter status';
+      filterButton.setAttribute('aria-label', 'Filter status');
+      filterButton.addEventListener('click', event => {
+        event.stopPropagation();
+        const menu = th.querySelector('.status-filter-menu');
+        menu.hidden = !menu.hidden;
+      });
+      th.appendChild(filterButton);
+      th.appendChild(buildStatusFilterMenu(filterButton));
     }
     const resizer = document.createElement('div');
     resizer.className = 'col-resizer';
@@ -638,66 +645,44 @@ function buildHeader() {
   buildFilterRow();
 }
 
-function buildStatusFilter(headerCell) {
-  headerCell.classList.add('status-filter-header');
-  const button = document.createElement('button');
-  button.className = 'status-filter-button';
-  button.type = 'button';
-  button.setAttribute('aria-label', 'Filter status');
-  button.setAttribute('aria-expanded', 'false');
-  const icon = document.createElement('span');
-  icon.className = 'status-filter-icon';
-  button.appendChild(icon);
-
-  const menu = document.createElement('div');
-  menu.className = 'status-filter-menu';
-  menu.hidden = true;
-  const statuses = [...new Set(allGames.map(game => String(game.status ?? '')))]
-    .sort((left, right) => left.localeCompare(right));
-  statuses.forEach(status => {
-    const label = document.createElement('label');
-    label.className = 'status-filter-option';
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.value = status;
-    checkbox.checked = statusFilterValues.has(status);
-    checkbox.addEventListener('change', () => {
-      statusFilterValues = new Set(
-        [...menu.querySelectorAll('input:checked')].map(input => input.value)
-      );
-      render();
-    });
-    label.appendChild(checkbox);
-    label.appendChild(document.createTextNode(status || 'Blank status'));
-    menu.appendChild(label);
-  });
-  button.addEventListener('click', event => {
-    event.stopPropagation();
-    if (openStatusMenu && openStatusMenu !== menu) {
-      openStatusMenu.hidden = true;
-      openStatusMenu.previousElementSibling.setAttribute('aria-expanded', 'false');
-    }
-    menu.hidden = !menu.hidden;
-    button.setAttribute('aria-expanded', String(!menu.hidden));
-    openStatusMenu = menu.hidden ? null : menu;
-  });
-  menu.addEventListener('click', event => event.stopPropagation());
-  headerCell.appendChild(button);
-  headerCell.appendChild(menu);
-}
-
 let allGames = [];
 const sortState = { colIndex: null, dir: 1 };
 const filters = {};
-let statusFilterValues = new Set();
-let openStatusMenu = null;
+
+function buildStatusFilterMenu(filterButton) {
+  const menu = document.createElement('div');
+  menu.className = 'status-filter-menu';
+  menu.hidden = true;
+  menu.addEventListener('click', event => event.stopPropagation());
+  const statusValues = [...new Set(allGames.map(game => game.status).filter(Boolean))].sort();
+  statusValues.forEach(status => {
+    const option = document.createElement('label');
+    option.className = 'status-filter-option';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = status;
+    checkbox.checked = selectedStatusValues === null || selectedStatusValues.has(status);
+    checkbox.addEventListener('change', () => {
+      const selected = new Set(
+        [...menu.querySelectorAll('input:checked')].map(input => input.value)
+      );
+      selectedStatusValues = selected.size === statusValues.length ? null : selected;
+      filterButton.classList.toggle('active', selectedStatusValues !== null);
+      render();
+    });
+    option.appendChild(checkbox);
+    option.append(status);
+    menu.appendChild(option);
+  });
+  filterButton.classList.toggle('active', selectedStatusValues !== null);
+  return menu;
+}
 
 document.addEventListener('click', event => {
-  if (openStatusMenu && !openStatusMenu.contains(event.target)) {
-    openStatusMenu.hidden = true;
-    openStatusMenu.previousElementSibling.setAttribute('aria-expanded', 'false');
-    openStatusMenu = null;
-  }
+  if (event.target.closest('.status-filter-menu') || event.target.closest('.status-filter-button')) return;
+  document.querySelectorAll('.status-filter-menu:not([hidden])').forEach(menu => {
+    menu.hidden = true;
+  });
 });
 
 function buildFilterRow() {
@@ -738,10 +723,6 @@ function sortByColumn(colIndex) {
 function render() {
   const columns = getActiveColumns();
   let games = allGames.filter(game => {
-    if (activeView === 'collection' && statusFilterValues.size > 0 &&
-        !statusFilterValues.has(String(game.status ?? ''))) {
-      return false;
-    }
     return Object.entries(filters).every(([colIndex, value]) => {
       if (!value) return true;
       const field = columns[Number(colIndex)]?.field;
@@ -749,7 +730,8 @@ function render() {
       const cell = game[field];
       return cell !== null && cell !== undefined && String(cell).toLowerCase().includes(value);
     });
-  });
+  })
+    .filter(game => selectedStatusValues === null || selectedStatusValues.has(game.status));
 
   if (sortState.colIndex !== null && columns[sortState.colIndex]) {
     const col = columns[sortState.colIndex];
@@ -890,12 +872,18 @@ function buildRows(games) {
         if (col.field === THUMBNAIL_COLUMN.field) {
           td.classList.add('thumbnail-cell');
           if (value) {
+            const link = document.createElement('a');
+            link.className = 'bgg-id-link';
+            link.href = getBoardGameUrl(game[RANK_ID_FIELD], game.game_name);
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
             const thumbnail = document.createElement('img');
             thumbnail.className = 'collection-thumbnail';
             thumbnail.src = value;
             thumbnail.alt = game.game_name ? game.game_name + ' thumbnail' : 'Game thumbnail';
             thumbnail.onerror = () => { thumbnail.remove(); };
-            td.appendChild(thumbnail);
+            link.appendChild(thumbnail);
+            td.appendChild(link);
           }
         } else if (col.field === RANK_ID_FIELD) {
           const link = document.createElement('a');
@@ -950,7 +938,6 @@ function buildRows(games) {
 function changeView(nextView) {
   activeView = nextView;
   Object.keys(filters).forEach(key => delete filters[key]);
-  statusFilterValues.clear();
   sortState.colIndex = null;
   sortState.dir = 1;
   document.querySelectorAll('#headerRow th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
