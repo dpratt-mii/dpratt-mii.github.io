@@ -6,63 +6,21 @@
 <style>
   html, body { height: 100%; }
   body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 0; background: #f5f5f5; display: flex; flex-direction: column; overflow: hidden; }
-  header { flex: 0 0 auto; padding: 12px 16px; background: #2b2f38; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  header { flex: 0 0 auto; padding: 12px 16px; background: #f2f2f2; color: #222; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .header-title { display: grid; gap: 4px; }
   header h1 { margin: 0; font-size: 18px; }
+  .header-title h1 { cursor: context-menu; }
   .view-select { display: flex; align-items: center; gap: 8px; font-size: 13px; }
   .view-toggle { display: flex; align-items: flex-end; gap: 12px; font-size: 13px; }
   .view-toggle label { font-weight: 600; }
   .view-select select { padding: 6px 10px; border-radius: 4px; border: 1px solid #d0d7de; font-size: 13px; }
-  .thumbnail-toggle { display: inline-flex; align-items: center; gap: 5px; color: #fff; cursor: pointer; }
-  .thumbnail-toggle input { width: 16px; height: 16px; margin: 0; accent-color: #fff; }
-  .header-filter { position: relative; display: grid; gap: 4px; min-width: 150px; }
-  .header-filter-title { color: #fff; font-size: 12px; font-weight: 600; }
-  .header-filter-button {
-    display: flex;
-    width: 100%;
-    min-height: 30px;
-    box-sizing: border-box;
-    align-items: center;
-    justify-content: space-between;
-    padding: 5px 8px;
-    border: 1px solid #d0d7de;
-    border-radius: 3px;
-    color: #111;
-    background: #fff;
-    cursor: pointer;
-    font-size: 13px;
-    text-align: left;
-  }
-  .header-filter-button::after { content: '\25bc'; color: #555; font-size: 10px; }
-  .header-filter-button.active { border-color: #75a7df; }
-  .header-filter-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    z-index: 5;
-    display: grid;
-    width: 240px;
-    max-height: 310px;
-    gap: 6px;
-    overflow: auto;
-    margin-top: 3px;
-    padding: 8px;
-    border: 1px solid #c9c9c9;
-    color: #666;
-    background: #fff;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, .2);
-    font-size: 14px;
-  }
-  .header-filter-menu[hidden] { display: none; }
-  .header-filter-search { width: 100%; box-sizing: border-box; padding: 7px; border: 1px solid #aaa; font-size: 14px; }
-  .header-filter-option { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
-  .header-filter-option input { width: 16px; height: 16px; margin: 0; accent-color: #3778c9; }
-  .header-filter-select-all { padding-bottom: 5px; border-bottom: 1px solid #ddd; }
+  .thumbnail-toggle { display: inline-flex; align-items: center; gap: 5px; color: #222; cursor: pointer; }
+  .thumbnail-toggle input { width: 16px; height: 16px; margin: 0; accent-color: #555; }
   #status { flex: 0 0 auto; padding: 8px 16px; font-size: 13px; color: #444; }
   body.collection-view { background: #fff; }
-  body.collection-view > header { background: #403b68; min-height: 42px; box-sizing: border-box; padding: 7px 16px; }
+  body.collection-view > header { background: #f2f2f2; min-height: 42px; box-sizing: border-box; padding: 7px 16px; }
   body.collection-view > header h1,
-  body.collection-view > header .view-toggle > .thumbnail-toggle { color: #fff; }
+  body.collection-view > header .view-toggle > .thumbnail-toggle { color: #222; }
   body.collection-view > header h1 { font-size: 16px; }
   body.collection-view > header .view-select select { padding: 4px 8px; }
   body.collection-view #status {
@@ -125,7 +83,9 @@
   }
   #status.error { color: #b00020; font-weight: bold; }
   .summary-cards { flex: 1 1 auto; display: flex; flex-wrap: nowrap; justify-content: center; gap: 8px; min-width: 0; }
-  .summary-card { flex: 1 1 0; min-width: 117px; max-width: 195px; box-sizing: border-box; padding: 4px 8px; background: #e7edf9; border: 1px solid #c6d3ec; border-radius: 6px; overflow: hidden; }
+  .summary-card { flex: 1 1 0; min-width: 117px; max-width: 195px; box-sizing: border-box; padding: 4px 8px; background: #e7edf9; border: 1px solid #c6d3ec; border-radius: 6px; cursor: pointer; overflow: hidden; }
+  .summary-card:hover, .summary-card:focus { border-color: #75a7df; outline: none; }
+  .summary-card.active { border-color: #2867a8; background: #d5e5f8; box-shadow: inset 0 0 0 1px #2867a8; }
   .summary-card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
   .summary-card-title { font-size: 14px; font-weight: 800; color: #5b6b85; letter-spacing: .03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .summary-card-count { font-size: 14px; font-weight: 800; color: #111; line-height: 1; white-space: nowrap; }
@@ -319,6 +279,53 @@
   .game-metadata { display: grid; gap: 12px; color: #eee; font-size: 19px; line-height: 1.35; }
   .game-metadata strong { margin-right: 8px; }
   .dialog-play-button { margin-top: 22px; padding: 10px 18px; border: 0; border-radius: 6px; font-size: 18px; font-weight: 700; cursor: pointer; }
+  #userLookupMenu {
+    position: fixed;
+    z-index: 20;
+    min-width: 150px;
+    padding: 4px;
+    border: 1px solid #aaa;
+    background: #fff;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, .25);
+  }
+  #userLookupMenu[hidden] { display: none; }
+  #userLookupMenu button {
+    width: 100%;
+    padding: 8px 12px;
+    border: 0;
+    color: #111;
+    background: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: left;
+  }
+  #userLookupMenu button:hover, #userLookupMenu button:focus { background: #e7edf9; }
+  #userLookupDialog {
+    width: min(1400px, calc(100vw - 32px));
+    max-width: 1400px;
+    max-height: calc(100vh - 32px);
+    box-sizing: border-box;
+    padding: 0;
+    border: 0;
+    color: #111;
+    background: #fff;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, .45);
+  }
+  #userLookupDialog::backdrop { background: rgba(1, 1, 6, .7); }
+  .user-lookup-shell { position: relative; padding: 24px; }
+  .user-lookup-header { display: flex; align-items: center; gap: 12px; padding-right: 40px; }
+  .user-lookup-header h2 { margin: 0; font-size: 24px; }
+  .user-lookup-download { margin-left: auto; padding: 8px 12px; border: 1px solid #2867a8; border-radius: 4px; color: #fff; background: #2867a8; cursor: pointer; font-weight: 700; }
+  .user-lookup-download:disabled { cursor: default; opacity: .5; }
+  .user-lookup-close { position: absolute; top: 8px; right: 12px; border: 0; color: #333; background: transparent; font-size: 30px; line-height: 1; cursor: pointer; }
+  .user-lookup-status { min-height: 22px; margin: 12px 0; color: #444; }
+  .user-lookup-status.error { color: #b00020; font-weight: 700; }
+  .user-lookup-table-wrap { max-height: calc(100vh - 180px); overflow: auto; border: 1px solid #cfd4da; }
+  .user-lookup-table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+  .user-lookup-table th, .user-lookup-table td { padding: 7px 9px; border: 1px solid #cfd4da; text-align: left; }
+  .user-lookup-table th { position: sticky; top: 0; color: #075bbb; background: #f5f7fa; }
+  .user-lookup-table tr:nth-child(even) td { background: #fafafa; }
+  .user-lookup-thumbnail { display: block; width: 60px; height: 80px; object-fit: cover; }
   @media (max-width: 760px) {
     .game-dialog-shell { grid-template-columns: 1fr; gap: 22px; min-height: 0; padding: 18px; }
     .game-cover-panel { align-items: stretch; }
@@ -338,7 +345,7 @@
 <body>
 <header>
   <div class="header-title">
-    <h1>Our BGG Collection</h1>
+    <h1 id="collectionTitle">Our BGG Collection</h1>
     <div class="view-select">
       <label for="viewSelect">View</label>
       <select id="viewSelect" aria-label="View">
@@ -349,14 +356,15 @@
   </div>
   <div class="summary-cards" id="summaryCards"></div>
   <div class="view-toggle">
-    <div class="header-filter" id="statusFilterControl"></div>
-    <div class="header-filter" id="collectionFilterControl"></div>
     <label class="thumbnail-toggle" for="thumbnailToggle">
       <input id="thumbnailToggle" type="checkbox" aria-label="Thumbnail" checked>
       Thumbnail
     </label>
   </div>
 </header>
+<div id="userLookupMenu" hidden>
+  <button id="userLookupMenuButton" type="button">User Lookup</button>
+</div>
 <div id="status">Loading data from collection.csv&hellip;</div>
 <div class="table-wrap">
   <table id="gameTable">
@@ -402,6 +410,22 @@
         <div><strong>Your Rating:</strong> <span id="dialogYourRating"></span></div>
         <div><strong>Your Plays:</strong> <span id="dialogYourPlays"></span></div>
       </div>
+    </div>
+  </div>
+</dialog>
+<dialog id="userLookupDialog" aria-labelledby="userLookupTitle">
+  <div class="user-lookup-shell">
+    <button class="user-lookup-close" id="userLookupClose" type="button" aria-label="Close user collection">&times;</button>
+    <div class="user-lookup-header">
+      <h2 id="userLookupTitle">BGG Collection</h2>
+      <button class="user-lookup-download" id="userLookupDownload" type="button" disabled>Download CSV</button>
+    </div>
+    <div class="user-lookup-status" id="userLookupStatus"></div>
+    <div class="user-lookup-table-wrap">
+      <table class="user-lookup-table" id="userLookupTable">
+        <thead><tr id="userLookupHeader"></tr></thead>
+        <tbody id="userLookupBody"></tbody>
+      </table>
     </div>
   </div>
 </dialog>
@@ -485,10 +509,21 @@ const RANK_ID_FIELD = 'boardgames_ranks.id';
 
 let activeView = 'collection';
 let thumbnailEnabled = true;
-let selectedStatusValues = new Set(['Owned']);
 let selectedCollectionValues = null;
 const COLLECTION_FLAGS = ['own', 'fortrade', 'want', 'wanttobuy', 'wanttoplay', 'prevowned', 'preordered', 'wishlist'];
 const WRAP_FIELDS = new Set(['description', 'categories', 'mechanics', 'alternate_names', 'families', 'publishers']);
+const COLLECTION_DETAILS_HEADERS = ['totalitems', 'termsofuse', 'pubdate', 'objecttype', 'objectid', 'subtype', 'collid', 'name', 'sortindex', 'yearpublished', 'image', 'thumbnail', 'minplayers', 'maxplayers', 'minplaytime', 'maxplaytime', 'playingtime', 'numowned', 'value', 'value2', 'value3', 'value4', 'value5', 'value6', 'own', 'prevowned', 'fortrade', 'want', 'wanttoplay', 'wanttobuy', 'wishlist', 'preordered', 'lastmodified', 'wishlistpriority', 'numplays', 'comment', 'originalname'];
+const USER_LOOKUP_COLUMNS = [
+  { header: '', field: 'thumbnail' },
+  { header: 'Name', field: 'name' },
+  { header: 'Year', field: 'yearpublished' },
+  { header: 'Players', field: 'players' },
+  { header: 'Playing Time', field: 'playingtime' },
+  { header: 'Status', field: 'status' },
+  { header: 'Rating', field: 'rating' },
+  { header: 'Plays', field: 'numplays' },
+  { header: 'Comment', field: 'comment' }
+];
 
 const SUMMARY_CARDS = [
   { flag: 'own', title: 'Own' },
@@ -505,6 +540,9 @@ function buildSummaryCards() {
   SUMMARY_CARDS.forEach(({ flag, title }) => {
     const card = document.createElement('div');
     card.className = 'summary-card';
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-pressed', 'false');
     const top = document.createElement('div');
     top.className = 'summary-card-top';
     const titleEl = document.createElement('div');
@@ -517,16 +555,32 @@ function buildSummaryCards() {
     visibleEl.className = 'summary-card-visible';
     card.append(top, visibleEl);
     container.appendChild(card);
-    summaryCardRefs.push({ flag, countEl, visibleEl });
+    const activate = () => {
+      selectedCollectionValues = selectedCollectionValues?.size === 1 && selectedCollectionValues.has(flag)
+        ? null
+        : new Set([flag]);
+      render();
+    };
+    card.addEventListener('click', activate);
+    card.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        activate();
+      }
+    });
+    summaryCardRefs.push({ flag, card, countEl, visibleEl });
   });
 }
 
 function updateSummaryCards(visibleGames) {
-  summaryCardRefs.forEach(({ flag, countEl, visibleEl }) => {
+  summaryCardRefs.forEach(({ flag, card, countEl, visibleEl }) => {
     const total = allGames.filter(game => game.in_collection.includes(flag)).length;
     const shown = visibleGames.filter(game => game.in_collection.includes(flag)).length;
     countEl.textContent = total;
     visibleEl.textContent = `Showing ${shown}`;
+    const active = selectedCollectionValues?.size === 1 && selectedCollectionValues.has(flag);
+    card.classList.toggle('active', active);
+    card.setAttribute('aria-pressed', String(active));
   });
 }
 
@@ -556,6 +610,194 @@ function parseAge(value) {
   if (value === null || value === undefined || value === '') return null;
   const match = String(value).match(/\d+/);
   return match ? Number(match[0]) : null;
+}
+
+function xmlValue(element, selector, fallback = '') {
+  const node = element.querySelector(selector);
+  return node?.getAttribute('value') || node?.textContent?.trim() || fallback;
+}
+
+function parseBggCollection(xmlText) {
+  const xml = new DOMParser().parseFromString(xmlText, 'text/xml');
+  if (xml.querySelector('parsererror')) throw new Error('BGG returned invalid collection data.');
+  const error = xml.querySelector('error message');
+  if (error) throw new Error(error.textContent.trim());
+  return [...xml.documentElement.querySelectorAll(':scope > item')].map(item => {
+    const stats = item.querySelector('stats');
+    const statusElement = item.querySelector('status');
+    const ratingElement = item.querySelector('rating');
+    const status = statusElement
+      ? ['own', 'prevowned', 'fortrade', 'want', 'wanttoplay', 'wanttobuy', 'wishlist', 'preordered']
+        .filter(flag => statusElement.getAttribute(flag) === '1')
+        .join(', ')
+      : '';
+    const row = Object.fromEntries(COLLECTION_DETAILS_HEADERS.map(header => [header, '']));
+    Object.assign(row, {
+      totalitems: xml.documentElement.getAttribute('totalitems') || '',
+      termsofuse: 'https://boardgamegeek.com/xmlapi/termsofuse',
+      objecttype: 'thing',
+      objectid: item.getAttribute('objectid') || item.getAttribute('id') || '',
+      subtype: item.getAttribute('subtype') || 'boardgame',
+      collid: item.getAttribute('collid') || '',
+      name: xmlValue(item, 'name'),
+      sortindex: item.getAttribute('sortindex') || '',
+      yearpublished: xmlValue(item, 'yearpublished'),
+      image: xmlValue(item, 'image'),
+      thumbnail: xmlValue(item, 'thumbnail'),
+      minplayers: stats?.getAttribute('minplayers') || '',
+      maxplayers: stats?.getAttribute('maxplayers') || '',
+      minplaytime: stats?.getAttribute('minplaytime') || '',
+      maxplaytime: stats?.getAttribute('maxplaytime') || '',
+      playingtime: stats?.getAttribute('playingtime') || '',
+      numowned: stats?.getAttribute('numowned') || '',
+      own: statusElement?.getAttribute('own') || '',
+      prevowned: statusElement?.getAttribute('prevowned') || '',
+      fortrade: statusElement?.getAttribute('fortrade') || '',
+      want: statusElement?.getAttribute('want') || '',
+      wanttoplay: statusElement?.getAttribute('wanttoplay') || '',
+      wanttobuy: statusElement?.getAttribute('wanttobuy') || '',
+      wishlist: statusElement?.getAttribute('wishlist') || '',
+      preordered: statusElement?.getAttribute('preordered') || '',
+      lastmodified: statusElement?.getAttribute('lastmodified') || '',
+      wishlistpriority: statusElement?.getAttribute('wishlistpriority') || '',
+      numplays: item.getAttribute('numplays') || '',
+      comment: item.getAttribute('comment') || '',
+      originalname: item.getAttribute('originalname') || '',
+      status,
+      players: stats ? `${stats.getAttribute('minplayers') || '?'}-${stats.getAttribute('maxplayers') || '?'}` : '',
+      rating: ratingElement?.getAttribute('value') || ''
+    });
+    return row;
+  });
+}
+
+function wait(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
+async function fetchBggCollection(username, accessToken = '') {
+  const endpoint = `https://boardgamegeek.com/xmlapi2/collection?username=${encodeURIComponent(username)}&stats=1`;
+  const headers = { Accept: 'application/xml' };
+  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const response = await fetch(endpoint, { headers });
+    if (response.status === 202) {
+      await wait(2000);
+      continue;
+    }
+    if (response.status === 401) {
+      const error = new Error('BGG requires an API access token.');
+      error.code = 'AUTH_REQUIRED';
+      throw error;
+    }
+    if (!response.ok) throw new Error(`BGG returned HTTP ${response.status}.`);
+    return parseBggCollection(await response.text());
+  }
+  throw new Error('BGG is still preparing that collection. Please try again.');
+}
+
+function renderUserLookup(rows) {
+  const header = document.getElementById('userLookupHeader');
+  const body = document.getElementById('userLookupBody');
+  header.innerHTML = '';
+  body.innerHTML = '';
+  USER_LOOKUP_COLUMNS.forEach(column => {
+    const th = document.createElement('th');
+    th.textContent = column.header;
+    header.appendChild(th);
+  });
+  rows.forEach(row => {
+    const tr = document.createElement('tr');
+    USER_LOOKUP_COLUMNS.forEach(column => {
+      const td = document.createElement('td');
+      if (column.field === 'thumbnail' && row.thumbnail) {
+        const image = document.createElement('img');
+        image.className = 'user-lookup-thumbnail';
+        image.src = row.thumbnail;
+        image.alt = `${row.name} thumbnail`;
+        td.appendChild(image);
+      } else {
+        td.textContent = row[column.field] || '';
+      }
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+}
+
+function csvEscape(value) {
+  const text = value === null || value === undefined ? '' : String(value);
+  return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+}
+
+function downloadUserCollection(username, rows) {
+  const csv = [
+    COLLECTION_DETAILS_HEADERS.join(','),
+    ...rows.map(row => COLLECTION_DETAILS_HEADERS.map(header => csvEscape(row[header])).join(','))
+  ].join('\r\n');
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  link.download = `collectiondetails-${username}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+async function openUserLookup() {
+  const username = window.prompt('Enter a BGG username:');
+  if (!username?.trim()) return;
+  const dialog = document.getElementById('userLookupDialog');
+  const status = document.getElementById('userLookupStatus');
+  const download = document.getElementById('userLookupDownload');
+  const cleanUsername = username.trim();
+  document.getElementById('userLookupTitle').textContent = `${cleanUsername}'s BGG Collection`;
+  status.className = 'user-lookup-status';
+  status.textContent = 'Loading collection from BoardGameGeek...';
+  download.disabled = true;
+  document.getElementById('userLookupHeader').innerHTML = '';
+  document.getElementById('userLookupBody').innerHTML = '';
+  dialog.showModal();
+  try {
+    let rows;
+    try {
+      rows = await fetchBggCollection(cleanUsername);
+    } catch (error) {
+      if (error.code !== 'AUTH_REQUIRED') throw error;
+      const accessToken = window.prompt('BGG now requires an API access token. Enter it to continue:');
+      if (!accessToken?.trim()) throw new Error('An API access token is required by BGG.');
+      status.textContent = 'Loading collection with the BGG access token...';
+      rows = await fetchBggCollection(cleanUsername, accessToken.trim());
+    }
+    renderUserLookup(rows);
+    status.textContent = `${rows.length.toLocaleString('en-US')} games loaded.`;
+    download.disabled = false;
+    download.onclick = () => downloadUserCollection(cleanUsername, rows);
+  } catch (error) {
+    status.className = 'user-lookup-status error';
+    status.textContent = `Unable to load collection: ${error.message}`;
+  }
+}
+
+function setupUserLookupMenu() {
+  const title = document.getElementById('collectionTitle');
+  const menu = document.getElementById('userLookupMenu');
+  const menuButton = document.getElementById('userLookupMenuButton');
+  title.addEventListener('contextmenu', event => {
+    event.preventDefault();
+    menu.hidden = false;
+    menu.style.left = `${Math.min(event.clientX, window.innerWidth - menu.offsetWidth - 8)}px`;
+    menu.style.top = `${Math.min(event.clientY, window.innerHeight - menu.offsetHeight - 8)}px`;
+    menuButton.focus();
+  });
+  menuButton.addEventListener('click', () => {
+    menu.hidden = true;
+    openUserLookup();
+  });
+  document.addEventListener('click', event => {
+    if (!event.target.closest('#userLookupMenu')) menu.hidden = true;
+  });
+  document.getElementById('userLookupClose').addEventListener('click', () => {
+    document.getElementById('userLookupDialog').close();
+  });
 }
 
 function parseCSV(text) {
@@ -764,158 +1006,6 @@ let allGames = [];
 const sortState = { colIndex: null, dir: 1 };
 const filters = {};
 
-function buildFilterMenu(field, title, filterButton) {
-  const menu = document.createElement('div');
-  menu.className = 'header-filter-menu';
-  menu.hidden = true;
-  menu.addEventListener('click', event => event.stopPropagation());
-  const values = field === 'status'
-    ? [...new Set(allGames.map(game => game.status).filter(Boolean))].sort()
-    : [...new Set(allGames.flatMap(game => game.in_collection))].sort();
-  const selectedValues = field === 'status' ? selectedStatusValues : selectedCollectionValues;
-
-  const search = document.createElement('input');
-  search.className = 'header-filter-search';
-  search.type = 'search';
-  search.placeholder = 'Find';
-  search.setAttribute('aria-label', `Find ${title}`);
-  menu.appendChild(search);
-
-  const options = document.createElement('div');
-  const selectAll = document.createElement('label');
-  selectAll.className = 'header-filter-option header-filter-select-all';
-  const selectAllInput = document.createElement('input');
-  selectAllInput.type = 'checkbox';
-  selectAllInput.checked = selectedValues === null;
-  selectAll.appendChild(selectAllInput);
-  selectAll.append('Select All');
-  options.appendChild(selectAll);
-
-  const checkboxes = [];
-  values.forEach(value => {
-    const option = document.createElement('label');
-    option.className = 'header-filter-option';
-    option.dataset.value = value.toLowerCase();
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.value = value;
-    checkbox.checked = selectedValues === null || selectedValues.has(value);
-    option.appendChild(checkbox);
-    option.append(value);
-    options.appendChild(option);
-    checkboxes.push(checkbox);
-  });
-  menu.appendChild(options);
-
-  function updateSelection() {
-    const selected = new Set(checkboxes.filter(input => input.checked).map(input => input.value));
-    const nextValues = selected.size === values.length ? null : selected;
-    if (field === 'status') selectedStatusValues = nextValues;
-    else selectedCollectionValues = nextValues;
-    selectAllInput.checked = nextValues === null;
-    filterButton.classList.toggle('active', nextValues !== null);
-    filterButton.textContent = nextValues === null
-      ? `All ${values.length} selected`
-      : `${selected.size} of ${values.length} selected`;
-    render();
-  }
-
-  selectAllInput.addEventListener('change', () => {
-    checkboxes.forEach(input => { input.checked = selectAllInput.checked; });
-    updateSelection();
-  });
-  checkboxes.forEach(input => input.addEventListener('change', updateSelection));
-  search.addEventListener('input', () => {
-    const query = search.value.trim().toLowerCase();
-    options.querySelectorAll('.header-filter-option:not(.header-filter-select-all)').forEach(option => {
-      option.hidden = query !== '' && !option.dataset.value.includes(query);
-    });
-  });
-
-  filterButton.addEventListener('click', event => {
-    event.stopPropagation();
-    menu.hidden = !menu.hidden;
-    if (!menu.hidden) {
-      search.focus();
-      attachHoverAutoClose();
-    }
-  });
-  filterButton.parentElement.addEventListener('focusout', event => {
-    const control = event.currentTarget;
-    if (control.contains(event.relatedTarget)) return;
-    menu.hidden = true;
-  });
-
-  // Closes the menu once the pointer leaves the bounding box spanning the title/button and the open menu
-  // (incl. the gap between them), padded by a small buffer so accidental overshoot doesn't close it.
-  const HOVER_CLOSE_BUFFER_PX = 10;
-  function attachHoverAutoClose() {
-    const control = filterButton.parentElement;
-    function handlePointerMove(event) {
-      if (menu.hidden) {
-        document.removeEventListener('mousemove', handlePointerMove);
-        return;
-      }
-      const controlRect = control.getBoundingClientRect();
-      const menuRect = menu.getBoundingClientRect();
-      const left = Math.min(controlRect.left, menuRect.left) - HOVER_CLOSE_BUFFER_PX;
-      const right = Math.max(controlRect.right, menuRect.right) + HOVER_CLOSE_BUFFER_PX;
-      const top = Math.min(controlRect.top, menuRect.top) - HOVER_CLOSE_BUFFER_PX;
-      const bottom = Math.max(controlRect.bottom, menuRect.bottom) + HOVER_CLOSE_BUFFER_PX;
-      const inside = event.clientX >= left && event.clientX <= right && event.clientY >= top && event.clientY <= bottom;
-      if (!inside) {
-        menu.hidden = true;
-        document.removeEventListener('mousemove', handlePointerMove);
-      }
-    }
-    document.addEventListener('mousemove', handlePointerMove);
-  }
-
-  filterButton.textContent = selectedValues === null
-    ? `All ${values.length} selected`
-    : `${selectedValues.size} of ${values.length} selected`;
-  filterButton.classList.toggle('active', selectedValues !== null);
-  return menu;
-}
-
-function buildStatusFilterMenu(filterButton) {
-  return buildFilterMenu('status', 'Status', filterButton);
-}
-
-function buildCollectionFilterMenu(filterButton) {
-  return buildFilterMenu('in_collection', 'In Collection', filterButton);
-}
-
-document.addEventListener('click', event => {
-  if (event.target.closest('.header-filter-menu') || event.target.closest('.header-filter-button')) return;
-  document.querySelectorAll('.header-filter-menu:not([hidden])').forEach(menu => {
-    menu.hidden = true;
-  });
-});
-
-function buildHeaderFilters() {
-  const statusControl = document.getElementById('statusFilterControl');
-  const collectionControl = document.getElementById('collectionFilterControl');
-  [
-    ['Status', 'status', statusControl],
-    ['In Collection', 'in_collection', collectionControl]
-  ].forEach(([title, field, control]) => {
-    control.innerHTML = '';
-    const titleElement = document.createElement('span');
-    titleElement.className = 'header-filter-title';
-    titleElement.textContent = title;
-    control.appendChild(titleElement);
-    const button = document.createElement('button');
-    button.className = 'header-filter-button';
-    button.type = 'button';
-    button.setAttribute('aria-label', `Filter ${title}`);
-    control.appendChild(button);
-    control.appendChild(field === 'status'
-      ? buildStatusFilterMenu(button)
-      : buildCollectionFilterMenu(button));
-  });
-}
-
 function buildFilterRow() {
   const row = document.getElementById('filterRow');
   row.innerHTML = '';
@@ -962,7 +1052,6 @@ function render() {
       return cell !== null && cell !== undefined && String(cell).toLowerCase().includes(value);
     });
   })
-    .filter(game => selectedStatusValues === null || selectedStatusValues.has(game.status))
     .filter(game => selectedCollectionValues === null
       || game.in_collection.some(value => selectedCollectionValues.has(value)));
 
@@ -1044,11 +1133,21 @@ function getBoardGameUrl(id, title) {
   return `https://boardgamegeek.com/boardgame/${encodeURIComponent(String(id))}/${slug}`;
 }
 
+function getLocalThumbnailUrl(value) {
+  if (!value) return '';
+  try {
+    const filename = new URL(value, window.location.href).pathname.split('/').pop();
+    return filename ? `thumbnails/${encodeURIComponent(filename)}` : '';
+  } catch {
+    return '';
+  }
+}
+
 function openGameDialog(game) {
   selectedGame = game;
   const dialog = document.getElementById('gameDialog');
   const cover = document.getElementById('dialogCover');
-  const coverUrl = game['collectiondetails2026.image'] || game['collectiondetails2026.thumbnail'];
+  const coverUrl = game['collectiondetails2026.image'] || getLocalThumbnailUrl(game['collectiondetails2026.thumbnail']);
   cover.hidden = !coverUrl;
   cover.src = coverUrl || '';
   cover.alt = game.game_name ? game.game_name + ' cover' : '';
@@ -1089,6 +1188,8 @@ document.getElementById('dialogPlayButton').addEventListener('click', () => {
   render();
 });
 
+setupUserLookupMenu();
+
 function buildRows(games) {
   const tbody = document.getElementById('bodyRows');
   const columns = getActiveColumns();
@@ -1112,7 +1213,7 @@ function buildRows(games) {
             link.rel = 'noopener noreferrer';
             const thumbnail = document.createElement('img');
             thumbnail.className = 'collection-thumbnail';
-            thumbnail.src = value;
+            thumbnail.src = getLocalThumbnailUrl(value);
             thumbnail.alt = game.game_name ? game.game_name + ' thumbnail' : 'Game thumbnail';
             thumbnail.onerror = () => { thumbnail.remove(); };
             link.appendChild(thumbnail);
@@ -1200,7 +1301,6 @@ function loadData() {
       let joinedRows = addJoinedColumns(collectionRows, rankRows, 'boardgames_ranks', 'id');
       joinedRows = addJoinedColumns(joinedRows, detailRows, 'collectiondetails2026', 'objectid');
       allGames = joinedRows.map(normalizeCsvRow);
-      buildHeaderFilters();
       buildHeader();
       buildSummaryCards();
       const viewSelect = document.getElementById('viewSelect');
