@@ -509,7 +509,7 @@ const RANK_ID_FIELD = 'boardgames_ranks.id';
 
 let activeView = 'collection';
 let thumbnailEnabled = true;
-let selectedCollectionValues = null;
+let selectedCollectionValues = new Set(['fortrade']);
 const COLLECTION_FLAGS = ['own', 'fortrade', 'want', 'wanttobuy', 'wanttoplay', 'prevowned', 'preordered', 'wishlist'];
 const WRAP_FIELDS = new Set(['description', 'categories', 'mechanics', 'alternate_names', 'families', 'publishers']);
 const COLLECTION_DETAILS_HEADERS = ['totalitems', 'termsofuse', 'pubdate', 'objecttype', 'objectid', 'subtype', 'collid', 'name', 'sortindex', 'yearpublished', 'image', 'thumbnail', 'minplayers', 'maxplayers', 'minplaytime', 'maxplaytime', 'playingtime', 'numowned', 'value', 'value2', 'value3', 'value4', 'value5', 'value6', 'own', 'prevowned', 'fortrade', 'want', 'wanttoplay', 'wanttobuy', 'wishlist', 'preordered', 'lastmodified', 'wishlistpriority', 'numplays', 'comment', 'originalname'];
