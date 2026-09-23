@@ -404,6 +404,8 @@
         <div class="game-stat"><strong><em id="dialogWeight">N/A</em> / 5</strong><span>Complexity Rating</span></div>
       </div>
       <div class="game-metadata">
+        <div><strong>Category:</strong> <span id="dialogCategories"></span></div>
+        <div><strong>Mechanism:</strong> <span id="dialogMechanics"></span></div>
         <div><strong>Collection:</strong> <span id="dialogStatus"></span></div>
         <div><strong>Your Rating:</strong> <span id="dialogYourRating"></span></div>
         <div><strong>Your Plays:</strong> <span id="dialogYourPlays"></span></div>
@@ -1312,7 +1314,7 @@ function openGameDialog(game) {
   selectedGame = game;
   const dialog = document.getElementById('gameDialog');
   const cover = document.getElementById('dialogCover');
-  const coverUrl = game['boardgame.image'] || getLocalThumbnailUrl(game['boardgame.thumbnail'], game.game_name);
+  const coverUrl = getLocalThumbnailUrl(game['boardgame.thumbnail'], game.game_name);
   cover.hidden = !coverUrl;
   cover.src = coverUrl || '';
   cover.alt = game.game_name ? game.game_name + ' cover' : '';
@@ -1333,6 +1335,8 @@ function openGameDialog(game) {
   setDialogText('dialogAge', game.min_age ? game.min_age + '+' : 'N/A');
   setDialogText('dialogWeight', game.weight === null ? 'N/A' : game.weight.toFixed(2));
   setDialogText('dialogDescription', 'Description unavailable in the loaded collection data.', 'Description unavailable in the loaded collection data.');
+  setDialogText('dialogCategories', game.categories, 'N/A');
+  setDialogText('dialogMechanics', game.mechanics, 'N/A');
   setDialogText('dialogCollectionStatus', game.status, 'Not in collection');
   setDialogText('dialogStatus', game.status, 'N/A');
   setDialogText('dialogYourRating', game.rating === null ? 'N/A' : game.rating);
