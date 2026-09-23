@@ -94,6 +94,7 @@
   table { border-collapse: collapse; font-size: 12px; white-space: nowrap; table-layout: fixed; }
   th, td { border: 1px solid #ddd; padding: 4px 8px; text-align: left; overflow: hidden; text-overflow: ellipsis; }
   thead th { position: sticky; top: 0; background: #2b2f38; color: #fff; z-index: 2; }
+  body:not(.collection-view) thead th { white-space: normal; word-break: break-word; }
   tbody tr:nth-child(even) { background: #fafafa; }
   tbody tr:hover { background: #eef6ff; }
   td.wrap { white-space: normal; max-width: 320px; }
@@ -1156,7 +1157,34 @@ const LOCAL_THUMBNAIL_OVERRIDES = {
   'Timeline: Americana': 'timeline americana.webp',
   "Unlock!: Mystery Adventures – The Nautilus' Traps": 'Unlock! Nautilus.webp',
   'Unstable Unicorns': 'unstable unicorns.webp',
-  'Space Escape': 'spaceescape.webp'
+  'Space Escape': 'spaceescape.webp',
+  // The remaining overrides below have no matching webp in thumbnails/, so they fall
+  // back to the thumbnail link recorded in collectiondetails2026.csv (image already cached locally).
+  '5-Minute Dungeon': 'pic9630053.jpg',
+  'Acquire': 'pic8483227.jpg',
+  'Cover Your Assets': 'pic8689177.jpg',
+  'Decodables': 'pic8571151.png',
+  "Don't Go Boom": 'pic7513307.jpg',
+  'Einstein: His Amazing Life and Incomparable Science': 'pic3640946.png',
+  'Guess the Mess!': 'pic9644084.png',
+  'Moose Master': 'pic7743566.jpg',
+  'Mount Everest': 'pic6135139.jpg',
+  'One Night Ultimate Werewolf': 'pic8783294.png',
+  'Ravine': 'pic9454370.png',
+  'Rhino Hero': 'pic9267030.png',
+  'Robinson Crusoe: Adventures on the Cursed Island': 'pic6026697.jpg',
+  'Scopa': 'pic8831024.png',
+  'Sidibaba': 'pic7696098.jpg',
+  'SPECTRE: The Board Game': 'pic7066038.jpg',
+  'Spot it!': 'pic6477003.png',
+  'Tacta': 'pic8758068.jpg',
+  'Ticket to Ride: San Francisco': 'pic6850090.png',
+  'Timeline: General Interest': 'pic8286827.png',
+  'UNO': 'pic8204165.jpg',
+  'Viva Mouse!': 'pic8774174.png',
+  "The Werewolves of Miller's Hollow": 'pic7203269.jpg',
+  'Zeus on the Loose': 'pic9551830.png',
+  'Zooloretto': 'pic7758113.jpg'
 };
 
 function getLocalThumbnailUrl(value, gameName = '') {
