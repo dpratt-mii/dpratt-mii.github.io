@@ -1,0 +1,17 @@
+id,type,name,friendlyname
+1,subtype,boardgame,Board Game Rank
+5496,family,thematic,Thematic Rank
+5497,family,strategygames,Strategy Game Rank
+4664,family,wargames,War Game Rank
+5499,family,familygames,Family Game Rank
+4667,family,cgs,Customizable Rank
+4666,family,abstracts,Abstract Game Rank
+5498,family,partygames,Party Game Rank
+4665,family,childrensgames,Children's Game Rank
+16,subtype,rpgitem,RPG Item Rank
+62,subtype,boardgameaccessory,Accessory Rank
+32,subtype,videogame,Video Game Rank
+4415,family,amiga,Amiga Rank
+4420,family,commodore64,Commodore 64 Rank
+4781,family,arcade,Arcade Rank
+4976,family,atarist,Atari ST Rank

@@ -11,16 +11,11 @@
   header h1 { margin: 0; font-size: 18px; }
   .header-title h1 { cursor: context-menu; }
   .view-select { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-  .view-toggle { display: flex; align-items: flex-end; gap: 12px; font-size: 13px; }
-  .view-toggle label { font-weight: 600; }
   .view-select select { padding: 6px 10px; border-radius: 4px; border: 1px solid #d0d7de; font-size: 13px; }
-  .thumbnail-toggle { display: inline-flex; align-items: center; gap: 5px; color: #222; cursor: pointer; }
-  .thumbnail-toggle input { width: 16px; height: 16px; margin: 0; accent-color: #555; }
   #status { flex: 0 0 auto; padding: 8px 16px; font-size: 13px; color: #444; }
   body.collection-view { background: #fff; }
   body.collection-view > header { background: #f2f2f2; min-height: 42px; box-sizing: border-box; padding: 7px 16px; }
-  body.collection-view > header h1,
-  body.collection-view > header .view-toggle > .thumbnail-toggle { color: #222; }
+  body.collection-view > header h1 { color: #222; }
   body.collection-view > header h1 { font-size: 16px; }
   body.collection-view > header .view-select select { padding: 4px 8px; }
   body.collection-view #status {
@@ -355,15 +350,10 @@
     </div>
   </div>
   <div class="summary-cards" id="summaryCards"></div>
-  <div class="view-toggle">
-    <label class="thumbnail-toggle" for="thumbnailToggle">
-      <input id="thumbnailToggle" type="checkbox" aria-label="Thumbnail" checked>
-      Thumbnail
-    </label>
-  </div>
 </header>
 <div id="userLookupMenu" hidden>
   <button id="userLookupMenuButton" type="button">User Lookup</button>
+  <button id="hideThumbnailsMenuButton" type="button">Hide Thumbnails</button>
 </div>
 <div id="status">Loading data from collection.csv&hellip;</div>
 <div class="table-wrap">
@@ -495,7 +485,6 @@ const BGG_COLUMNS = [
 const COLLECTION_COLUMNS = [
   { header: 'Title',        field: 'game_name' },
   { header: 'Geek Rating',  field: 'bgg_rating' },
-  { header: 'Status',       field: 'status' },
   { header: 'In Collection', field: 'in_collection' },
   { header: 'Min Players',  field: 'min_players' },
   { header: 'Max Players',  field: 'max_players' },
@@ -503,8 +492,8 @@ const COLLECTION_COLUMNS = [
 ];
 
 const ADDITIONAL_COLUMNS = [];
-const THUMBNAIL_COLUMN = { header: '', field: 'collectiondetails2026.thumbnail' };
-const VALUE3_FIELD = 'collectiondetails2026.value3';
+const THUMBNAIL_COLUMN = { header: '', field: 'boardgame.thumbnail' };
+const VALUE3_FIELD = 'boardgame.average';
 const RANK_ID_FIELD = 'boardgames_ranks.id';
 
 let activeView = 'collection';
@@ -791,6 +780,10 @@ function setupUserLookupMenu() {
   menuButton.addEventListener('click', () => {
     menu.hidden = true;
     openUserLookup();
+  });
+  document.getElementById('hideThumbnailsMenuButton').addEventListener('click', () => {
+    menu.hidden = true;
+    changeThumbnail(false);
   });
   document.addEventListener('click', event => {
     if (!event.target.closest('#userLookupMenu')) menu.hidden = true;
@@ -1122,6 +1115,12 @@ function formatGeekRating(value) {
   return Number.isFinite(number) ? number.toFixed(3) : 'N/A';
 }
 
+function formatTableRating(value) {
+  if (value === null || value === undefined || value === '') return 'N/A';
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toFixed(2) : 'N/A';
+}
+
 function getBoardGameUrl(id, title) {
   const slug = String(title || '')
     .trim()
@@ -1177,7 +1176,7 @@ function openGameDialog(game) {
   selectedGame = game;
   const dialog = document.getElementById('gameDialog');
   const cover = document.getElementById('dialogCover');
-  const coverUrl = game['collectiondetails2026.image'] || getLocalThumbnailUrl(game['collectiondetails2026.thumbnail'], game.game_name);
+  const coverUrl = game['boardgame.image'] || getLocalThumbnailUrl(game['boardgame.thumbnail'], game.game_name);
   cover.hidden = !coverUrl;
   cover.src = coverUrl || '';
   cover.alt = game.game_name ? game.game_name + ' cover' : '';
@@ -1188,7 +1187,7 @@ function openGameDialog(game) {
   setDialogText('dialogOverallRank', formatNumber(game['boardgames_ranks.rank']));
   setDialogText('dialogFamilyRank', formatNumber(game['boardgames_ranks.familygames_rank']));
   setDialogText('dialogRating', formatRating(game.average_rating));
-  setDialogText('dialogGeekRating', formatGeekRating(game['collectiondetails2026.value4']));
+  setDialogText('dialogGeekRating', formatGeekRating(game['boardgame.bayesaverage']));
   setDialogText('dialogPlayers', game.min_players !== null && game.max_players !== null
     ? game.min_players + '-' + game.max_players
     : 'N/A');
@@ -1272,10 +1271,13 @@ function buildRows(games) {
           });
         } else if (activeView === 'collection' && col.field === 'bgg_rating') {
           td.classList.add('rating-cell');
-          td.textContent = value === null ? 'N/A' : value;
+          td.textContent = formatTableRating(value);
         } else if (activeView === 'collection' && col.field === 'rating') {
           td.classList.add('rating-cell');
           td.textContent = value === null ? 'N/A' : value;
+        } else if (activeView === 'collection' && col.field === VALUE3_FIELD) {
+          td.classList.add('rating-cell');
+          td.textContent = formatTableRating(value);
         } else if (activeView === 'collection' && col.field === 'status') {
           td.classList.add('status-cell');
           if (value === 'Owned') td.classList.add('owned');
@@ -1320,25 +1322,22 @@ function changeThumbnail(enabled) {
 
 function loadData() {
   const status = document.getElementById('status');
-  status.textContent = 'Loading collection.csv, boardgames_ranks.csv, and collectiondetails2026.csv...';
+  status.textContent = 'Loading collection.csv, boardgames_ranks.csv, and More data/boardgame.csv...';
   Promise.all([
     loadCsvFile('collection.csv'),
     loadCsvFile('boardgames_ranks.csv'),
-    loadCsvFile('collectiondetails2026.csv')
+    loadCsvFile('More data/boardgame.csv')
   ])
     .then(([collectionRows, rankRows, detailRows]) => {
       ADDITIONAL_COLUMNS.length = 0;
       let joinedRows = addJoinedColumns(collectionRows, rankRows, 'boardgames_ranks', 'id');
-      joinedRows = addJoinedColumns(joinedRows, detailRows, 'collectiondetails2026', 'objectid');
+      joinedRows = addJoinedColumns(joinedRows, detailRows, 'boardgame', 'bg_id');
       allGames = joinedRows.map(normalizeCsvRow);
       buildHeader();
       buildSummaryCards();
       const viewSelect = document.getElementById('viewSelect');
       viewSelect.addEventListener('change', (event) => {
         changeView(event.target.value);
-      });
-      document.getElementById('thumbnailToggle').addEventListener('change', (event) => {
-        changeThumbnail(event.target.checked);
       });
       status.hidden = true;
       render();
