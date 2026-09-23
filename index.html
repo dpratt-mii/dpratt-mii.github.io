@@ -890,7 +890,7 @@ function normalizeCsvRow(row) {
     status,
     in_collection: inCollection,
     comment,
-    categories: '',
+    categories: row.categories || '',
     mechanics: '',
     description: ''
   };
@@ -920,6 +920,23 @@ function loadCsvFile(filename) {
       if (!rows.length) throw new Error(filename + ' is empty or invalid.');
       return rows;
     });
+}
+
+function buildCategoryLookup(categoryRows, joinRows) {
+  const nameById = new Map(categoryRows.map(row => [String(row.id ?? '').trim(), row.name]));
+  const namesByBgId = new Map();
+  joinRows.forEach(row => {
+    const bgId = String(row.bg_id ?? '').trim();
+    const name = nameById.get(String(row.id ?? '').trim());
+    if (!bgId || !name) return;
+    if (!namesByBgId.has(bgId)) namesByBgId.set(bgId, []);
+    namesByBgId.get(bgId).push(name);
+  });
+  const categoriesByBgId = new Map();
+  namesByBgId.forEach((names, bgId) => {
+    categoriesByBgId.set(bgId, [...names].sort((a, b) => a.localeCompare(b)).join(', '));
+  });
+  return categoriesByBgId;
 }
 
 function addJoinedColumns(collectionRows, sourceRows, sourceName, sourceKey) {
@@ -1354,12 +1371,18 @@ function loadData() {
   Promise.all([
     loadCsvFile('collection.csv'),
     loadCsvFile('boardgames_ranks.csv'),
-    loadCsvFile('More data/boardgame.csv')
+    loadCsvFile('More data/boardgame.csv'),
+    loadCsvFile('More data/category_bg_join.csv'),
+    loadCsvFile('More data/category.csv')
   ])
-    .then(([collectionRows, rankRows, detailRows]) => {
+    .then(([collectionRows, rankRows, detailRows, categoryJoinRows, categoryRows]) => {
       ADDITIONAL_COLUMNS.length = 0;
       let joinedRows = addJoinedColumns(collectionRows, rankRows, 'boardgames_ranks', 'id');
       joinedRows = addJoinedColumns(joinedRows, detailRows, 'boardgame', 'bg_id');
+      const categoriesByBgId = buildCategoryLookup(categoryRows, categoryJoinRows);
+      joinedRows.forEach(row => {
+        row.categories = categoriesByBgId.get(String(row.objectid ?? '').trim()) || '';
+      });
       allGames = joinedRows.map(normalizeCsvRow);
       buildHeader();
       buildSummaryCards();

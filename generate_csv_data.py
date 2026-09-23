@@ -11,7 +11,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent
 DST = ROOT / 'csv_data.js'
-FILES = ['collection.csv', 'boardgames_ranks.csv', 'collectiondetails2026.csv', 'More data/boardgame.csv']
+FILES = [
+    'collection.csv', 'boardgames_ranks.csv', 'collectiondetails2026.csv',
+    'More data/boardgame.csv', 'More data/category_bg_join.csv', 'More data/category.csv'
+]
 
 
 def main():
