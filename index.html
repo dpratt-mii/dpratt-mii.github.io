@@ -1133,8 +1133,38 @@ function getBoardGameUrl(id, title) {
   return `https://boardgamegeek.com/boardgame/${encodeURIComponent(String(id))}/${slug}`;
 }
 
-function getLocalThumbnailUrl(value) {
-  if (!value) return '';
+const LOCAL_THUMBNAIL_OVERRIDES = {
+  'A Game of Thrones: The Card Game – Ice and Fire Draft Starter': 'pic1680702.jpg',
+  "Murder Mystery Flexi Party: Murder in the Roaring '20s": 'pic8921727.jpg',
+  '2Can': '2can.webp',
+  'Box One': 'boxone.webp',
+  'Cartagena': 'Cartagena.webp',
+  'Couch Skeletons': 'couchskelswebp.webp',
+  'Fictions: Memoirs of a Gangster': 'fictions.webp',
+  'Fork Milk Kidnap': 'forkmilk.webp',
+  'Happy Little Dinosaurs': 'happydino.webp',
+  "I'm Right You're Wrong": 'imright.webp',
+  'Ice Duo': 'iceduo.webp',
+  'Junior Detective': 'junior.webp',
+  'Little Devils': 'LittleDevils.webp',
+  'Mind MGMT: The Psychic Espionage “Game.”': 'Mind.webp',
+  'Overboss: A Boss Monster Adventure': 'Overboss.webp',
+  'Sentinels of the Multiverse: Shattered Timelines & Wrath of the Cosmos': 'sentinels1.webp',
+  'Sexopoly': 'sexopoly.webp',
+  '"SHOTGUN!": The Road Trip Game': 'SHOTGUN.webp',
+  'Taco Cat Goat Cheese Pizza': 'Taco Cat Goat Cheese Pizza.webp',
+  'Thief: A High-Speed Card Chase': 'thief.webp',
+  'Timeline: Americana': 'timeline americana.webp',
+  "Unlock!: Mystery Adventures – The Nautilus' Traps": 'Unlock! Nautilus.webp',
+  'Unstable Unicorns': 'unstable unicorns.webp',
+  'Space Escape': 'spaceescape.webp'
+};
+
+function getLocalThumbnailUrl(value, gameName = '') {
+  if (!value) {
+    const fallback = LOCAL_THUMBNAIL_OVERRIDES[gameName];
+    return fallback ? `thumbnails/${encodeURIComponent(fallback)}` : '';
+  }
   try {
     const filename = new URL(value, window.location.href).pathname.split('/').pop();
     return filename ? `thumbnails/${encodeURIComponent(filename)}` : '';
@@ -1147,7 +1177,7 @@ function openGameDialog(game) {
   selectedGame = game;
   const dialog = document.getElementById('gameDialog');
   const cover = document.getElementById('dialogCover');
-  const coverUrl = game['collectiondetails2026.image'] || getLocalThumbnailUrl(game['collectiondetails2026.thumbnail']);
+  const coverUrl = game['collectiondetails2026.image'] || getLocalThumbnailUrl(game['collectiondetails2026.thumbnail'], game.game_name);
   cover.hidden = !coverUrl;
   cover.src = coverUrl || '';
   cover.alt = game.game_name ? game.game_name + ' cover' : '';
@@ -1213,7 +1243,7 @@ function buildRows(games) {
             link.rel = 'noopener noreferrer';
             const thumbnail = document.createElement('img');
             thumbnail.className = 'collection-thumbnail';
-            thumbnail.src = getLocalThumbnailUrl(value);
+            thumbnail.src = getLocalThumbnailUrl(value, game.game_name);
             thumbnail.alt = game.game_name ? game.game_name + ' thumbnail' : 'Game thumbnail';
             thumbnail.onerror = () => { thumbnail.remove(); };
             link.appendChild(thumbnail);
