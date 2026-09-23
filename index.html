@@ -1188,10 +1188,9 @@ const LOCAL_THUMBNAIL_OVERRIDES = {
 };
 
 function getLocalThumbnailUrl(value, gameName = '') {
-  if (!value) {
-    const fallback = LOCAL_THUMBNAIL_OVERRIDES[gameName];
-    return fallback ? `thumbnails/${encodeURIComponent(fallback)}` : '';
-  }
+  const override = LOCAL_THUMBNAIL_OVERRIDES[gameName];
+  if (override) return `thumbnails/${encodeURIComponent(override)}`;
+  if (!value) return '';
   try {
     const filename = new URL(value, window.location.href).pathname.split('/').pop();
     return filename ? `thumbnails/${encodeURIComponent(filename)}` : '';
@@ -1262,7 +1261,8 @@ function buildRows(games) {
         const value = game[col.field];
         if (col.field === THUMBNAIL_COLUMN.field) {
           td.classList.add('thumbnail-cell');
-          if (value) {
+          const thumbUrl = getLocalThumbnailUrl(value, game.game_name);
+          if (thumbUrl) {
             const link = document.createElement('a');
             link.className = 'bgg-id-link';
             link.href = getBoardGameUrl(game[RANK_ID_FIELD], game.game_name);
@@ -1270,7 +1270,7 @@ function buildRows(games) {
             link.rel = 'noopener noreferrer';
             const thumbnail = document.createElement('img');
             thumbnail.className = 'collection-thumbnail';
-            thumbnail.src = getLocalThumbnailUrl(value, game.game_name);
+            thumbnail.src = thumbUrl;
             thumbnail.alt = game.game_name ? game.game_name + ' thumbnail' : 'Game thumbnail';
             thumbnail.onerror = () => { thumbnail.remove(); };
             link.appendChild(thumbnail);
