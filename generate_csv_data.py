@@ -13,7 +13,9 @@ ROOT = Path(__file__).parent
 DST = ROOT / 'csv_data.js'
 FILES = [
     'collection.csv', 'boardgames_ranks.csv', 'collectiondetails2026.csv',
-    'More data/boardgame.csv', 'More data/category_bg_join.csv', 'More data/category.csv'
+    'More data/boardgame.csv', 'More data/category_bg_join.csv', 'More data/category.csv',
+    'More data/family_bg_join.csv', 'More data/family.csv',
+    'More data/mechanic_bg_join.csv', 'More data/mechanic.csv'
 ]
 
 
