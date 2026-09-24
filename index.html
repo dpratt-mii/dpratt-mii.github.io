@@ -294,6 +294,7 @@
   .rules-dialog-shell { display: flex; max-height: calc(100vh - 32px); flex-direction: column; }
   .rules-dialog-header { position: relative; flex: 0 0 auto; min-height: 72px; padding: 24px 220px 20px 30px; color: #fff; background: #193954; }
   .rules-dialog-header h2 { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; line-height: 1.2; }
+  .rules-dialog-subtitle { margin: 8px 0 0; color: #c3d3e2; font-size: 14px; }
   .rules-color-strip { position: absolute; top: 27px; right: 62px; display: flex; gap: 8px; }
   .rules-color-strip i { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
   .rules-color-strip i::after { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #fff; }
@@ -304,22 +305,17 @@
   .rules-color-strip i:nth-child(5) { background: #7956a5; }
   .rules-dialog-close { position: absolute; top: 10px; right: 16px; border: 0; color: #fff; background: transparent; font-size: 32px; line-height: 1; cursor: pointer; }
   .rules-dialog-content {
-    display: grid;
+    display: flex;
     flex: 1 1 auto;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-areas: 'intro intro' 'overview mechanics' 'setup mechanics' 'round scoring' 'source source';
-    gap: 18px 22px;
+    flex-direction: column;
+    gap: 18px;
     min-height: 0;
     padding: 22px 24px 28px;
     overflow-y: auto;
   }
-  .rules-dialog-intro { grid-area: intro; margin: 0; color: #526273; font-size: 15px; }
-  .rules-section { min-width: 0; margin: 0; border-radius: 6px; background: #fff; box-shadow: 0 1px 4px rgba(25, 57, 84, .12); overflow: hidden; }
-  .rules-section:nth-of-type(1) { grid-area: overview; }
-  .rules-section:nth-of-type(2) { grid-area: setup; }
-  .rules-section:nth-of-type(3) { grid-area: round; }
-  .rules-section:nth-of-type(4) { grid-area: mechanics; }
-  .rules-section:nth-of-type(5) { grid-area: scoring; }
+  .rules-columns { display: flex; flex-wrap: wrap; gap: 18px 22px; align-items: flex-start; }
+  .rules-column { display: flex; flex: 1 1 360px; flex-direction: column; gap: 18px; min-width: 0; }
+  .rules-section { min-width: 0; height: auto; margin: 0; border-radius: 6px; background: #fff; box-shadow: 0 1px 4px rgba(25, 57, 84, .12); overflow: visible; }
   .rules-section h3 { margin: 0; padding: 11px 16px; color: #fff; background: #32847f; font-size: 18px; letter-spacing: 0; }
   .rules-section h4 { margin: 18px 0 7px; font-size: 15px; }
   .rules-section p, .rules-section li { line-height: 1.5; }
@@ -334,7 +330,12 @@
   .rules-setup-piece.track { bottom: 24px; left: 7%; width: 110px; height: 28px; background: repeating-linear-gradient(90deg, #df4955 0 20px, #f2be3f 20px 40px, #4d9a6c 40px 60px, #4385c5 60px 80px, #7956a5 80px 100px); }
   .rules-setup-piece.tokens { right: 10%; bottom: 30px; width: 62px; height: 62px; border-radius: 50%; background: radial-gradient(circle at 32% 32%, #f2be3f 0 8px, transparent 9px), radial-gradient(circle at 68% 35%, #4385c5 0 8px, transparent 9px), radial-gradient(circle at 52% 69%, #df4955 0 8px, transparent 9px), #fff; }
   .rules-setup-caption { margin: 0 18px 14px !important; color: #607182; font-size: 12px; font-style: italic; }
-  .rules-source-note { grid-area: source; margin: 0; padding: 12px 14px; border-left: 4px solid #e6b53d; background: #fff; line-height: 1.45; box-shadow: 0 1px 4px rgba(25, 57, 84, .12); }
+  .rules-tiebreak-box { margin: 10px 18px 18px; padding: 12px 14px; border-radius: 4px; background: #eef1f7; }
+  .rules-tiebreak-box p { margin: 0 0 6px; font-weight: 700; }
+  .rules-tiebreak-box ol { margin: 0; padding-left: 20px; }
+  .rules-footer { flex: 0 0 auto; padding: 14px 18px; border-radius: 6px; background: #e6b53d; box-shadow: 0 1px 4px rgba(25, 57, 84, .12); }
+  .rules-footer-main { margin: 0; line-height: 1.5; color: #23282b; }
+  .rules-footer-note { margin: 6px 0 0; color: #47433a; font-size: 12px; line-height: 1.4; }
   #userLookupMenu {
     position: fixed;
     z-index: 20;
@@ -415,8 +416,9 @@
     .rules-dialog-header { padding: 20px 56px 18px 20px; }
     .rules-dialog-header h2 { font-size: 21px; }
     .rules-color-strip { display: none; }
-    .rules-dialog-content { display: block; padding: 16px; }
-    .rules-dialog-intro, .rules-section, .rules-source-note { margin-bottom: 14px; }
+    .rules-dialog-content { padding: 16px; }
+    .rules-columns { flex-direction: column; }
+    .rules-column { flex-basis: auto; }
   }
 </style>
 </head>
@@ -501,6 +503,7 @@
     <div class="rules-dialog-header">
       <button class="rules-dialog-close" id="rulesDialogClose" type="button" aria-label="Close quick rules">&times;</button>
       <h2 id="rulesDialogTitle"></h2>
+      <p class="rules-dialog-subtitle" id="rulesDialogSubtitle"></p>
       <div class="rules-color-strip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
     </div>
     <div class="rules-dialog-content" id="rulesDialogContent"></div>
@@ -1446,13 +1449,19 @@ function openRulesDialog(game) {
     : 'See rulebook';
 
   document.getElementById('rulesDialogTitle').textContent = `${game.game_name || 'Game'} \u2014 QUICK REFERENCE GUIDE`;
+  document.getElementById('rulesDialogSubtitle').textContent = 'Fast setup and gameplay summary. Consult the full rulebook for edge cases.';
   content.innerHTML = '';
-  const intro = document.createElement('p');
-  intro.className = 'rules-dialog-intro';
-  intro.textContent = 'A streamlined summary for fast setup and gameplay. For edge cases, consult the full rulebook.';
-  content.appendChild(intro);
 
-  addRulesSection(content, '1. GAME OVERVIEW', section => {
+  const columns = document.createElement('div');
+  columns.className = 'rules-columns';
+  const leftColumn = document.createElement('div');
+  leftColumn.className = 'rules-column';
+  const rightColumn = document.createElement('div');
+  rightColumn.className = 'rules-column';
+  columns.append(leftColumn, rightColumn);
+  content.appendChild(columns);
+
+  addRulesSection(leftColumn, '1. GAME OVERVIEW', section => {
     const description = getPlainTextDescription(game['boardgame.description']);
     if (description) {
       const summary = document.createElement('p');
@@ -1473,7 +1482,7 @@ function openRulesDialog(game) {
     ]);
   });
 
-  addRulesSection(content, '2. SETUP CHRONOLOGY', section => {
+  addRulesSection(leftColumn, '2. SETUP CHRONOLOGY', section => {
     addSetupVisual(section, game);
     addRulesList(section, [
       'Central Play Area: Place the main board or shared play area in the center of the table, if used.',
@@ -1485,7 +1494,7 @@ function openRulesDialog(game) {
     ], true);
   });
 
-  addRulesSection(content, '3. STRUCTURE OF A ROUND', section => {
+  addRulesSection(leftColumn, '3. STRUCTURE OF A ROUND', section => {
     const lead = document.createElement('p');
     lead.textContent = 'Use the phase order below as a checklist only after confirming that it matches this game\'s rulebook.';
     section.appendChild(lead);
@@ -1501,7 +1510,7 @@ function openRulesDialog(game) {
     });
   });
 
-  addRulesSection(content, '4. KEY MECHANICS & RULES REFRESHER', section => {
+  addRulesSection(rightColumn, '4. KEY MECHANICS & RULES REFRESHER', section => {
     addRulesList(section, [
       'Hand Limits & Trading: Confirm timing, limits, and permitted exchanges in the full rulebook.',
       'Dice / Conflict Resolution: Confirm symbol values, rerolls, modifiers, and tie handling before play.',
@@ -1510,21 +1519,43 @@ function openRulesDialog(game) {
     ]);
   });
 
-  addRulesSection(content, '5. SCORING & TIEBREAKERS', section => {
+  addRulesSection(rightColumn, '5. SCORING & TIEBREAKERS', section => {
     const lead = document.createElement('p');
     lead.textContent = 'When the game-end condition is reached, follow the rulebook procedure for finishing turns or the round, then calculate all scoring categories.';
     section.appendChild(lead);
     addRulesList(section, [
       'Add points from completed objectives, buildings, cards, tracks, territories, or other scoring sources.',
-      'Apply penalties and end-game bonuses.',
-      'Resolve ties using the ordered tiebreakers in the full rulebook.'
+      'Apply penalties and end-game bonuses.'
     ]);
+    const tiebreakBox = document.createElement('div');
+    tiebreakBox.className = 'rules-tiebreak-box';
+    const tiebreakLabel = document.createElement('p');
+    tiebreakLabel.textContent = 'Tiebreakers, in order';
+    tiebreakBox.appendChild(tiebreakLabel);
+    const tiebreakList = document.createElement('ol');
+    ['Confirm the primary tiebreaker in the full rulebook.', 'Confirm the secondary tiebreaker in the full rulebook.', 'Confirm any final tiebreaker (e.g. player order) in the full rulebook.'].forEach(item => {
+      const entry = document.createElement('li');
+      entry.textContent = item;
+      tiebreakList.appendChild(entry);
+    });
+    tiebreakBox.appendChild(tiebreakList);
+    section.appendChild(tiebreakBox);
   });
 
-  const sourceNote = document.createElement('p');
-  sourceNote.className = 'rules-source-note';
-  sourceNote.textContent = 'This quick reference uses the collection metadata currently available. Boardgame.csv does not contain full setup, turn, scoring, or tiebreaker rules, so those details must be verified against the game rulebook.';
-  content.appendChild(sourceNote);
+  const footer = document.createElement('div');
+  footer.className = 'rules-footer';
+  const footerMain = document.createElement('p');
+  footerMain.className = 'rules-footer-main';
+  const footerLabel = document.createElement('strong');
+  footerLabel.textContent = 'FAST REMINDER  ';
+  footerMain.append(footerLabel, `Players ${players} | Playing time ${playingTime} | Confirm rounds, turn order, and end trigger in the full rulebook.`);
+  footer.appendChild(footerMain);
+  const footerNote = document.createElement('p');
+  footerNote.className = 'rules-footer-note';
+  footerNote.textContent = 'This quick reference uses the collection metadata currently available. Boardgame.csv does not contain full setup, turn, scoring, or tiebreaker rules, so those details must be verified against the game rulebook.';
+  footer.appendChild(footerNote);
+  content.appendChild(footer);
+
   content.scrollTop = 0;
   dialog.showModal();
 }
