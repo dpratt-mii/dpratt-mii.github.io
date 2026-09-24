@@ -338,15 +338,19 @@
   #userLookupMenu {
     position: fixed;
     z-index: 20;
-    min-width: 150px;
+    min-width: 180px;
     padding: 4px;
     border: 1px solid #aaa;
     background: #fff;
     box-shadow: 0 3px 8px rgba(0, 0, 0, .25);
   }
   #userLookupMenu[hidden] { display: none; }
-  #userLookupMenu button {
+  #userLookupMenu .menu-group { position: relative; }
+  #userLookupMenu button,
+  #userLookupMenu a {
+    display: block;
     width: 100%;
+    box-sizing: border-box;
     padding: 8px 12px;
     border: 0;
     color: #111;
@@ -354,8 +358,21 @@
     cursor: pointer;
     font-size: 14px;
     text-align: left;
+    text-decoration: none;
   }
-  #userLookupMenu button:hover, #userLookupMenu button:focus { background: #e7edf9; }
+  #userLookupMenu button:hover, #userLookupMenu button:focus,
+  #userLookupMenu a:hover, #userLookupMenu a:focus { background: #e7edf9; }
+  #userLookupMenu .sub-menu {
+    position: absolute;
+    top: 0;
+    left: calc(100% + 2px);
+    min-width: 200px;
+    padding: 4px;
+    border: 1px solid #aaa;
+    background: #fff;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, .25);
+  }
+  #userLookupMenu .sub-menu[hidden] { display: none; }
   #userLookupDialog {
     width: min(1400px, calc(100vw - 32px));
     max-width: 1400px;
@@ -420,6 +437,13 @@
 <div id="userLookupMenu" hidden>
   <button id="userLookupMenuButton" type="button">User Lookup</button>
   <button id="hideThumbnailsMenuButton" type="button">Hide Thumbnails</button>
+  <div class="menu-group">
+    <button id="rulesSubmenuButton" type="button" aria-expanded="false">Rules ▸</button>
+    <div id="rulesSubmenu" class="sub-menu" hidden>
+      <a href="https://en.1jour-1jeu.com/rules/search?q=my+city" target="_blank" rel="noopener noreferrer">1jour-1jeu</a>
+      <a href="https://rule-book.org/" target="_blank" rel="noopener noreferrer">rule-book.org</a>
+    </div>
+  </div>
 </div>
 <div id="status">Loading data from collection.csv&hellip;</div>
 <div class="table-wrap">
@@ -852,23 +876,45 @@ function setupUserLookupMenu() {
   const title = document.getElementById('collectionTitle');
   const menu = document.getElementById('userLookupMenu');
   const menuButton = document.getElementById('userLookupMenuButton');
+  const rulesMenu = document.getElementById('rulesSubmenu');
+  const rulesButton = document.getElementById('rulesSubmenuButton');
+
+  function closeAllMenus() {
+    menu.hidden = true;
+    rulesMenu.hidden = true;
+    rulesButton.setAttribute('aria-expanded', 'false');
+  }
+
   title.addEventListener('contextmenu', event => {
     event.preventDefault();
     menu.hidden = false;
+    rulesMenu.hidden = true;
+    rulesButton.setAttribute('aria-expanded', 'false');
     menu.style.left = `${Math.min(event.clientX, window.innerWidth - menu.offsetWidth - 8)}px`;
     menu.style.top = `${Math.min(event.clientY, window.innerHeight - menu.offsetHeight - 8)}px`;
     menuButton.focus();
   });
   menuButton.addEventListener('click', () => {
-    menu.hidden = true;
+    closeAllMenus();
     openUserLookup();
   });
   document.getElementById('hideThumbnailsMenuButton').addEventListener('click', () => {
-    menu.hidden = true;
+    closeAllMenus();
     changeThumbnail(false);
   });
+  rulesButton.addEventListener('click', event => {
+    event.stopPropagation();
+    const open = rulesMenu.hidden;
+    rulesMenu.hidden = !open;
+    rulesButton.setAttribute('aria-expanded', String(open));
+  });
+  rulesMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => closeAllMenus());
+  });
   document.addEventListener('click', event => {
-    if (!event.target.closest('#userLookupMenu')) menu.hidden = true;
+    if (!event.target.closest('#userLookupMenu')) {
+      closeAllMenus();
+    }
   });
   document.getElementById('userLookupClose').addEventListener('click', () => {
     document.getElementById('userLookupDialog').close();
