@@ -336,6 +336,9 @@
   .rules-footer { flex: 0 0 auto; padding: 14px 18px; border-radius: 6px; background: #e6b53d; box-shadow: 0 1px 4px rgba(25, 57, 84, .12); }
   .rules-footer-main { margin: 0; line-height: 1.5; color: #23282b; }
   .rules-footer-note { margin: 6px 0 0; color: #47433a; font-size: 12px; line-height: 1.4; }
+  .rules-pdf-frame { display: block; flex: 1 1 auto; width: 100%; min-height: 70vh; border: 0; background: #fff; }
+  .rules-pdf-fallback { margin: 0; padding: 12px 14px; background: #fff; }
+  .rules-pdf-fallback a { color: #075bbb; }
   #userLookupMenu {
     position: fixed;
     z-index: 20;
@@ -532,6 +535,7 @@
 // field = matching key in the CSV data, or null when the CSV has no equivalent data (rendered blank).
 const COLUMNS = [
   { header: 'Name',           field: 'game_name' },
+  { header: 'bgg-ID',         field: 'bgg_id' },
   { header: 'Rating',         field: 'average_rating' },
   { header: 'Complex',        field: 'weight' },
   { header: 'Yr',             field: 'year_published' },
@@ -544,7 +548,6 @@ const COLUMNS = [
   { header: 'Tmin',           field: 'playing_time_min' },
   { header: 'Tmax',           field: 'playing_time_max' },
   { header: 'bggSTAT',        field: null },
-  { header: 'bgg-ID',         field: 'bgg_id' },
   { header: 'RecG',           field: null },
   { header: 'TYPE',           field: null },
   { header: 'Category',       field: 'categories' },
@@ -600,6 +603,9 @@ const COLLECTION_COLUMNS = [
 const ADDITIONAL_COLUMNS = [];
 const THUMBNAIL_COLUMN = { header: '', field: 'boardgame.thumbnail' };
 const RULES_COLUMN = { header: 'Quick Rules', type: 'rules' };
+const QUICK_RULES_FILES = [
+  'Sagrada_Quick_Reference_Guide_Clean-199561.pdf'
+];
 const VALUE3_FIELD = 'boardgame.average';
 const RANK_ID_FIELD = 'boardgames_ranks.id';
 
@@ -1441,6 +1447,8 @@ function addSetupVisual(container, game) {
 function openRulesDialog(game) {
   const dialog = document.getElementById('rulesDialog');
   const content = document.getElementById('rulesDialogContent');
+  const bggId = String(game['boardgame.bg_id'] || game.objectid || '').trim();
+  const quickRulesFile = QUICK_RULES_FILES.find(filename => bggId && filename.includes(bggId));
   const players = game.min_players !== null && game.max_players !== null
     ? game.min_players === game.max_players ? String(game.min_players) : `${game.min_players}-${game.max_players}`
     : 'See rulebook';
@@ -1449,8 +1457,33 @@ function openRulesDialog(game) {
     : 'See rulebook';
 
   document.getElementById('rulesDialogTitle').textContent = `${game.game_name || 'Game'} \u2014 QUICK REFERENCE GUIDE`;
-  document.getElementById('rulesDialogSubtitle').textContent = 'Fast setup and gameplay summary. Consult the full rulebook for edge cases.';
+  document.getElementById('rulesDialogSubtitle').textContent = quickRulesFile
+    ? 'Local quick-reference guide'
+    : 'Fast setup and gameplay summary. Consult the full rulebook for edge cases.';
   content.innerHTML = '';
+
+  if (quickRulesFile) {
+    const quickRulesUrl = `quickrules/${quickRulesFile}`;
+    const frame = document.createElement('iframe');
+    frame.className = 'rules-pdf-frame';
+    frame.src = quickRulesUrl;
+    frame.title = `${game.game_name || 'Game'} quick-reference guide`;
+    content.appendChild(frame);
+
+    const fallback = document.createElement('p');
+    fallback.className = 'rules-pdf-fallback';
+    const link = document.createElement('a');
+    link.href = quickRulesUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'Open the quick-reference PDF in a new tab';
+    fallback.appendChild(link);
+    content.appendChild(fallback);
+
+    content.scrollTop = 0;
+    dialog.showModal();
+    return;
+  }
 
   const columns = document.createElement('div');
   columns.className = 'rules-columns';
