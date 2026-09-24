@@ -1464,24 +1464,7 @@ function openRulesDialog(game) {
 
   if (quickRulesFile) {
     const quickRulesUrl = `quickrules/${quickRulesFile}`;
-    const frame = document.createElement('iframe');
-    frame.className = 'rules-pdf-frame';
-    frame.src = quickRulesUrl;
-    frame.title = `${game.game_name || 'Game'} quick-reference guide`;
-    content.appendChild(frame);
-
-    const fallback = document.createElement('p');
-    fallback.className = 'rules-pdf-fallback';
-    const link = document.createElement('a');
-    link.href = quickRulesUrl;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.textContent = 'Open the quick-reference PDF in a new tab';
-    fallback.appendChild(link);
-    content.appendChild(fallback);
-
-    content.scrollTop = 0;
-    dialog.showModal();
+    window.open(quickRulesUrl, '_blank', 'noopener,noreferrer');
     return;
   }
 
