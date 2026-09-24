@@ -2,8 +2,8 @@
 data via a <script> tag as a fallback when opened directly from disk
 (file:// URLs), where fetch() of local files is blocked by the browser.
 
-Run this again any time collection.csv, boardgames_ranks.csv,
-collectiondetails2026.csv, or More data/boardgame.csv are updated:
+Run this again any time collection.csv, boardgames_ranks.csv, or
+More data/boardgame.csv are updated:
     python generate_csv_data.py
 """
 import json
@@ -11,12 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent
 DST = ROOT / 'csv_data.js'
-FILES = [
-    'collection.csv', 'boardgames_ranks.csv', 'collectiondetails2026.csv',
-    'More data/boardgame.csv', 'More data/category_bg_join.csv', 'More data/category.csv',
-    'More data/family_bg_join.csv', 'More data/family.csv',
-    'More data/mechanic_bg_join.csv', 'More data/mechanic.csv'
-]
+FILES = ['collection.csv', 'boardgames_ranks.csv', 'More data/boardgame.csv']
 
 
 def main():

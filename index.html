@@ -274,7 +274,67 @@
   .game-stat em { color: #2bd485; font-style: normal; }
   .game-metadata { display: grid; gap: 12px; color: #eee; font-size: 19px; line-height: 1.35; }
   .game-metadata strong { margin-right: 8px; }
-  .dialog-play-button { margin-top: 22px; padding: 10px 18px; border: 0; border-radius: 6px; font-size: 18px; font-weight: 700; cursor: pointer; }
+  .game-dialog-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+  .dialog-play-button, .dialog-rules-button { padding: 10px 18px; border: 0; border-radius: 6px; font-size: 18px; font-weight: 700; cursor: pointer; }
+  .dialog-rules-button { color: #fff; background: #2867a8; }
+  .rules-cell { text-align: center !important; vertical-align: middle !important; }
+  .rules-button { padding: 7px 10px; border: 1px solid #2867a8; border-radius: 4px; color: #fff; background: #2867a8; font-weight: 700; cursor: pointer; white-space: normal; }
+  .rules-button:hover, .rules-button:focus, .dialog-rules-button:hover, .dialog-rules-button:focus { background: #174d82; }
+  #rulesDialog {
+    width: min(1180px, calc(100vw - 32px));
+    max-width: 1180px;
+    max-height: calc(100vh - 32px);
+    padding: 0;
+    border: 0;
+    color: #17324b;
+    background: #f7f4ec;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, .5);
+  }
+  #rulesDialog::backdrop { background: rgba(1, 1, 6, .76); }
+  .rules-dialog-shell { display: flex; max-height: calc(100vh - 32px); flex-direction: column; }
+  .rules-dialog-header { position: relative; flex: 0 0 auto; min-height: 72px; padding: 24px 220px 20px 30px; color: #fff; background: #193954; }
+  .rules-dialog-header h2 { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; line-height: 1.2; }
+  .rules-color-strip { position: absolute; top: 27px; right: 62px; display: flex; gap: 8px; }
+  .rules-color-strip i { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
+  .rules-color-strip i::after { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #fff; }
+  .rules-color-strip i:nth-child(1) { background: #df4955; }
+  .rules-color-strip i:nth-child(2) { background: #f2be3f; }
+  .rules-color-strip i:nth-child(3) { background: #4d9a6c; }
+  .rules-color-strip i:nth-child(4) { background: #4385c5; }
+  .rules-color-strip i:nth-child(5) { background: #7956a5; }
+  .rules-dialog-close { position: absolute; top: 10px; right: 16px; border: 0; color: #fff; background: transparent; font-size: 32px; line-height: 1; cursor: pointer; }
+  .rules-dialog-content {
+    display: grid;
+    flex: 1 1 auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: 'intro intro' 'overview mechanics' 'setup mechanics' 'round scoring' 'source source';
+    gap: 18px 22px;
+    min-height: 0;
+    padding: 22px 24px 28px;
+    overflow-y: auto;
+  }
+  .rules-dialog-intro { grid-area: intro; margin: 0; color: #526273; font-size: 15px; }
+  .rules-section { min-width: 0; margin: 0; border-radius: 6px; background: #fff; box-shadow: 0 1px 4px rgba(25, 57, 84, .12); overflow: hidden; }
+  .rules-section:nth-of-type(1) { grid-area: overview; }
+  .rules-section:nth-of-type(2) { grid-area: setup; }
+  .rules-section:nth-of-type(3) { grid-area: round; }
+  .rules-section:nth-of-type(4) { grid-area: mechanics; }
+  .rules-section:nth-of-type(5) { grid-area: scoring; }
+  .rules-section h3 { margin: 0; padding: 11px 16px; color: #fff; background: #32847f; font-size: 18px; letter-spacing: 0; }
+  .rules-section h4 { margin: 18px 0 7px; font-size: 15px; }
+  .rules-section p, .rules-section li { line-height: 1.5; }
+  .rules-section p { margin: 12px 18px; }
+  .rules-section ul, .rules-section ol { margin: 12px 18px 18px; padding-left: 22px; }
+  .rules-objective { padding: 10px 12px; border-left: 4px solid #e6b53d; background: #fff7d9; }
+  .rules-objective strong { color: #193954; }
+  .rules-setup-visual { position: relative; display: grid; min-height: 270px; margin: 14px 18px 8px; place-items: center; border: 1px solid #d8e1e7; border-radius: 4px; background: #eef4f3; overflow: hidden; }
+  .rules-setup-image { z-index: 1; display: block; width: 42%; height: 190px; object-fit: contain; filter: drop-shadow(0 5px 6px rgba(25, 57, 84, .18)); }
+  .rules-setup-piece { position: absolute; border: 2px solid rgba(25, 57, 84, .18); background: #fff; box-shadow: 0 3px 8px rgba(25, 57, 84, .13); }
+  .rules-setup-piece.cards { top: 22px; right: 9%; width: 76px; height: 106px; background: repeating-linear-gradient(135deg, #fff 0 11px, #dbeae7 11px 22px); }
+  .rules-setup-piece.track { bottom: 24px; left: 7%; width: 110px; height: 28px; background: repeating-linear-gradient(90deg, #df4955 0 20px, #f2be3f 20px 40px, #4d9a6c 40px 60px, #4385c5 60px 80px, #7956a5 80px 100px); }
+  .rules-setup-piece.tokens { right: 10%; bottom: 30px; width: 62px; height: 62px; border-radius: 50%; background: radial-gradient(circle at 32% 32%, #f2be3f 0 8px, transparent 9px), radial-gradient(circle at 68% 35%, #4385c5 0 8px, transparent 9px), radial-gradient(circle at 52% 69%, #df4955 0 8px, transparent 9px), #fff; }
+  .rules-setup-caption { margin: 0 18px 14px !important; color: #607182; font-size: 12px; font-style: italic; }
+  .rules-source-note { grid-area: source; margin: 0; padding: 12px 14px; border-left: 4px solid #e6b53d; background: #fff; line-height: 1.45; box-shadow: 0 1px 4px rgba(25, 57, 84, .12); }
   #userLookupMenu {
     position: fixed;
     z-index: 20;
@@ -335,6 +395,11 @@
     .game-description { font-size: 18px; }
     .game-stats { grid-template-columns: repeat(2, 1fr); }
     .game-stat:nth-child(2) { border-right: 0; }
+    .rules-dialog-header { padding: 20px 56px 18px 20px; }
+    .rules-dialog-header h2 { font-size: 21px; }
+    .rules-color-strip { display: none; }
+    .rules-dialog-content { display: block; padding: 16px; }
+    .rules-dialog-intro, .rules-section, .rules-source-note { margin-bottom: 14px; }
   }
 </style>
 </head>
@@ -401,7 +466,20 @@
         <div><strong>Your Rating:</strong> <span id="dialogYourRating"></span></div>
         <div><strong>Your Plays:</strong> <span id="dialogYourPlays"></span></div>
       </div>
+      <div class="game-dialog-actions">
+        <button class="dialog-rules-button" type="button" id="dialogRulesButton">Quick Rules</button>
+      </div>
     </div>
+  </div>
+</dialog>
+<dialog id="rulesDialog" aria-labelledby="rulesDialogTitle">
+  <div class="rules-dialog-shell">
+    <div class="rules-dialog-header">
+      <button class="rules-dialog-close" id="rulesDialogClose" type="button" aria-label="Close quick rules">&times;</button>
+      <h2 id="rulesDialogTitle"></h2>
+      <div class="rules-color-strip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="rules-dialog-content" id="rulesDialogContent"></div>
   </div>
 </dialog>
 <dialog id="userLookupDialog" aria-labelledby="userLookupTitle">
@@ -494,6 +572,7 @@ const COLLECTION_COLUMNS = [
 
 const ADDITIONAL_COLUMNS = [];
 const THUMBNAIL_COLUMN = { header: '', field: 'boardgame.thumbnail' };
+const RULES_COLUMN = { header: 'Quick Rules', type: 'rules' };
 const VALUE3_FIELD = 'boardgame.average';
 const RANK_ID_FIELD = 'boardgames_ranks.id';
 
@@ -578,7 +657,8 @@ function getActiveColumns() {
   const columns = activeView === 'collection' ? COLLECTION_COLUMNS : COLUMNS;
   const activeColumns = columns.concat(ADDITIONAL_COLUMNS);
   if (activeView !== 'collection') {
-    return thumbnailEnabled ? [THUMBNAIL_COLUMN, ...activeColumns] : activeColumns;
+    const detailedColumns = thumbnailEnabled ? [THUMBNAIL_COLUMN, ...activeColumns] : activeColumns;
+    return [...detailedColumns, RULES_COLUMN];
   }
   const value3Column = ADDITIONAL_COLUMNS.find(column => column.field === VALUE3_FIELD);
   const averageRatingColumn = value3Column
@@ -587,7 +667,8 @@ function getActiveColumns() {
   const collectionColumns = value3Column
     ? [COLLECTION_COLUMNS[0], averageRatingColumn, ...COLLECTION_COLUMNS.slice(1)]
     : COLLECTION_COLUMNS;
-  return thumbnailEnabled ? [THUMBNAIL_COLUMN, ...collectionColumns] : collectionColumns;
+  const visibleColumns = thumbnailEnabled ? [THUMBNAIL_COLUMN, ...collectionColumns] : collectionColumns;
+  return [...visibleColumns, RULES_COLUMN];
 }
 
 function toNumber(value) {
@@ -951,9 +1032,11 @@ function buildColGroup(columns = getActiveColumns()) {
       ? [125, 225, 102, 94, 180, 190, 96, 96, 390]
       : [225, 102, 94, 180, 190, 96, 96, 390]
     : thumbnailEnabled ? [125] : [];
-  columns.forEach((_, index) => {
+  columns.forEach((column, index) => {
     const col = document.createElement('col');
-    col.style.width = activeView === 'collection'
+    col.style.width = column.type === 'rules'
+      ? '116px'
+      : activeView === 'collection'
       ? (collectionWidths[index] ?? 120) + 'px'
       : '120px';
     frag.appendChild(col);
@@ -1236,7 +1319,175 @@ function closeGameDialog() {
   if (dialog.open) dialog.close();
 }
 
+function addRulesSection(container, heading, contentBuilder) {
+  const section = document.createElement('section');
+  section.className = 'rules-section';
+  const title = document.createElement('h3');
+  title.textContent = heading;
+  section.appendChild(title);
+  contentBuilder(section);
+  container.appendChild(section);
+}
+
+function addRulesList(container, items, ordered = false) {
+  const list = document.createElement(ordered ? 'ol' : 'ul');
+  items.forEach(item => {
+    const entry = document.createElement('li');
+    entry.textContent = item;
+    list.appendChild(entry);
+  });
+  container.appendChild(list);
+}
+
+function getPlainTextDescription(value) {
+  if (!value) return '';
+  const parsed = new DOMParser().parseFromString(String(value), 'text/html');
+  return (parsed.body.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function getObjectiveFromDescription(description) {
+  if (!description) return 'Confirm the primary win condition in the full rulebook.';
+  const sentences = description.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [];
+  const objective = sentences.find(sentence => /\b(objective|goal|win|victory|score|compete|first player)\b/i.test(sentence));
+  return (objective || sentences[0] || '').trim();
+}
+
+function addSetupVisual(container, game) {
+  const visual = document.createElement('div');
+  visual.className = 'rules-setup-visual';
+  const imageUrl = game['boardgame.image'] || game['boardgame.thumbnail'];
+  if (imageUrl) {
+    const image = document.createElement('img');
+    const fallbackUrl = getLocalThumbnailUrl(game['boardgame.thumbnail'], game.game_name);
+    image.className = 'rules-setup-image';
+    image.src = imageUrl;
+    image.alt = `${game.game_name || 'Game'} artwork in an illustrative top-down setup map`;
+    image.onerror = () => {
+      if (fallbackUrl && image.src !== new URL(fallbackUrl, window.location.href).href) {
+        image.src = fallbackUrl;
+      } else {
+        image.hidden = true;
+      }
+    };
+    visual.appendChild(image);
+  }
+  ['cards', 'track', 'tokens'].forEach(type => {
+    const piece = document.createElement('span');
+    piece.className = `rules-setup-piece ${type}`;
+    piece.setAttribute('aria-hidden', 'true');
+    visual.appendChild(piece);
+  });
+  container.appendChild(visual);
+  const caption = document.createElement('p');
+  caption.className = 'rules-setup-caption';
+  caption.textContent = 'Illustrative top-down table layout using game artwork from BoardGameGeek. Follow the rulebook for exact component positions.';
+  container.appendChild(caption);
+}
+
+function openRulesDialog(game) {
+  const dialog = document.getElementById('rulesDialog');
+  const content = document.getElementById('rulesDialogContent');
+  const players = game.min_players !== null && game.max_players !== null
+    ? game.min_players === game.max_players ? String(game.min_players) : `${game.min_players}-${game.max_players}`
+    : 'See rulebook';
+  const playingTime = game.playing_time_min !== null && game.playing_time_max !== null
+    ? game.playing_time_min === game.playing_time_max ? `${game.playing_time_min} minutes` : `${game.playing_time_min}-${game.playing_time_max} minutes`
+    : 'See rulebook';
+
+  document.getElementById('rulesDialogTitle').textContent = `${game.game_name || 'Game'} \u2014 QUICK REFERENCE GUIDE`;
+  content.innerHTML = '';
+  const intro = document.createElement('p');
+  intro.className = 'rules-dialog-intro';
+  intro.textContent = 'A streamlined summary for fast setup and gameplay. For edge cases, consult the full rulebook.';
+  content.appendChild(intro);
+
+  addRulesSection(content, '1. GAME OVERVIEW', section => {
+    const description = getPlainTextDescription(game['boardgame.description']);
+    if (description) {
+      const summary = document.createElement('p');
+      summary.textContent = description;
+      section.appendChild(summary);
+    }
+    const objective = document.createElement('p');
+    objective.className = 'rules-objective';
+    const objectiveLabel = document.createElement('strong');
+    objectiveLabel.textContent = 'Objective: ';
+    objective.append(objectiveLabel, getObjectiveFromDescription(description));
+    section.appendChild(objective);
+    addRulesList(section, [
+      `Players: ${players}.`,
+      `Expected playing time: ${playingTime}.`,
+      `Recommended age: ${game.min_age ? `${game.min_age}+` : 'See rulebook'}.`,
+      'Game End Trigger: Confirm the exact end trigger and whether the current round is completed in the full rulebook.'
+    ]);
+  });
+
+  addRulesSection(content, '2. SETUP CHRONOLOGY', section => {
+    addSetupVisual(section, game);
+    addRulesList(section, [
+      'Central Play Area: Place the main board or shared play area in the center of the table, if used.',
+      'Card Decks: Separate, shuffle, and reveal decks exactly as directed by the full rulebook.',
+      'Resource Pool: Sort shared tokens and resources within reach of all players.',
+      'Player Components: Each player chooses a color or faction and takes its matching components and starting resources.',
+      'Starting Positions: Place player pieces, markers, and starting cards in their rulebook-defined locations.',
+      'First Player: Determine the first player using the method in the full rulebook.'
+    ], true);
+  });
+
+  addRulesSection(content, '3. STRUCTURE OF A ROUND', section => {
+    const lead = document.createElement('p');
+    lead.textContent = 'Use the phase order below as a checklist only after confirming that it matches this game\'s rulebook.';
+    section.appendChild(lead);
+    ['PHASE 1: EVENT / REFRESH PHASE', 'PHASE 2: PLAYER ACTIONS (THE CORE GAME)', 'PHASE 3: END OF ROUND CLEANUP'].forEach(phase => {
+      const heading = document.createElement('h4');
+      heading.textContent = phase;
+      section.appendChild(heading);
+      addRulesList(section, phase.includes('PHASE 1')
+        ? ['Resolve scheduled events, upkeep, or refresh effects in rulebook order.', 'Refill shared displays and reset round-limited components as directed.']
+        : phase.includes('PHASE 2')
+          ? ['Take turns in the required order.', 'Perform the allowed number of actions, paying all costs and resolving each action completely.', 'Apply movement, gathering, building, buying, combat, or other game-specific actions only as defined by the rulebook.']
+          : ['Resolve end-of-round effects and check limits.', 'Check the game-end condition.', 'Advance round markers and pass the first-player marker when required.']);
+    });
+  });
+
+  addRulesSection(content, '4. KEY MECHANICS & RULES REFRESHER', section => {
+    addRulesList(section, [
+      'Hand Limits & Trading: Confirm timing, limits, and permitted exchanges in the full rulebook.',
+      'Dice / Conflict Resolution: Confirm symbol values, rerolls, modifiers, and tie handling before play.',
+      'Wild Resources: Confirm which resources are wild and any restrictions on spending them.',
+      'Timing Conflicts: Use the rulebook priority order when effects resolve simultaneously.'
+    ]);
+  });
+
+  addRulesSection(content, '5. SCORING & TIEBREAKERS', section => {
+    const lead = document.createElement('p');
+    lead.textContent = 'When the game-end condition is reached, follow the rulebook procedure for finishing turns or the round, then calculate all scoring categories.';
+    section.appendChild(lead);
+    addRulesList(section, [
+      'Add points from completed objectives, buildings, cards, tracks, territories, or other scoring sources.',
+      'Apply penalties and end-game bonuses.',
+      'Resolve ties using the ordered tiebreakers in the full rulebook.'
+    ]);
+  });
+
+  const sourceNote = document.createElement('p');
+  sourceNote.className = 'rules-source-note';
+  sourceNote.textContent = 'This quick reference uses the collection metadata currently available. Boardgame.csv does not contain full setup, turn, scoring, or tiebreaker rules, so those details must be verified against the game rulebook.';
+  content.appendChild(sourceNote);
+  content.scrollTop = 0;
+  dialog.showModal();
+}
+
+function closeRulesDialog() {
+  const dialog = document.getElementById('rulesDialog');
+  if (dialog.open) dialog.close();
+}
+
 document.getElementById('dialogClose').addEventListener('click', closeGameDialog);
+document.getElementById('rulesDialogClose').addEventListener('click', closeRulesDialog);
+document.getElementById('dialogRulesButton').addEventListener('click', () => {
+  if (selectedGame) openRulesDialog(selectedGame);
+});
 document.getElementById('dialogPlayButton').addEventListener('click', () => {
   if (!selectedGame) return;
   selectedGame.numplays = (selectedGame.numplays || 0) + 1;
@@ -1257,7 +1508,16 @@ function buildRows(games) {
     const tr = document.createElement('tr');
     columns.forEach(col => {
       const td = document.createElement('td');
-      if (col.field && game[col.field] !== undefined && game[col.field] !== null) {
+      if (col.type === 'rules') {
+        td.className = 'rules-cell';
+        const button = document.createElement('button');
+        button.className = 'rules-button';
+        button.type = 'button';
+        button.textContent = 'Quick Rules';
+        button.setAttribute('aria-label', `Open quick rules for ${game.game_name || 'this game'}`);
+        button.addEventListener('click', () => openRulesDialog(game));
+        td.appendChild(button);
+      } else if (col.field && game[col.field] !== undefined && game[col.field] !== null) {
         const value = game[col.field];
         if (col.field === THUMBNAIL_COLUMN.field) {
           td.classList.add('thumbnail-cell');
