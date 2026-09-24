@@ -1355,16 +1355,21 @@ function getObjectiveFromDescription(description) {
 function addSetupVisual(container, game) {
   const visual = document.createElement('div');
   visual.className = 'rules-setup-visual';
-  const imageUrl = game['boardgame.image'] || game['boardgame.thumbnail'];
+
+  const localThumbUrl = getLocalThumbnailUrl(game['boardgame.thumbnail'], game.game_name);
+  const remoteImageUrl = game['boardgame.image'] && !/boardgamegeek\.com|cf\.geekdo-images\.com/i.test(String(game['boardgame.image']))
+    ? game['boardgame.image']
+    : '';
+  const imageUrl = localThumbUrl || remoteImageUrl;
+
   if (imageUrl) {
     const image = document.createElement('img');
-    const fallbackUrl = getLocalThumbnailUrl(game['boardgame.thumbnail'], game.game_name);
     image.className = 'rules-setup-image';
     image.src = imageUrl;
     image.alt = `${game.game_name || 'Game'} artwork in an illustrative top-down setup map`;
     image.onerror = () => {
-      if (fallbackUrl && image.src !== new URL(fallbackUrl, window.location.href).href) {
-        image.src = fallbackUrl;
+      if (localThumbUrl && image.src !== new URL(localThumbUrl, window.location.href).href) {
+        image.src = localThumbUrl;
       } else {
         image.hidden = true;
       }
@@ -1380,7 +1385,7 @@ function addSetupVisual(container, game) {
   container.appendChild(visual);
   const caption = document.createElement('p');
   caption.className = 'rules-setup-caption';
-  caption.textContent = 'Illustrative top-down table layout using game artwork from BoardGameGeek. Follow the rulebook for exact component positions.';
+  caption.textContent = 'Illustrative top-down table layout using local game artwork when available. Follow the rulebook for exact component positions.';
   container.appendChild(caption);
 }
 
