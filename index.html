@@ -1621,7 +1621,7 @@ function buildRows(games) {
         const button = document.createElement('button');
         button.className = 'rules-button';
         button.type = 'button';
-        button.textContent = 'Quick Rules';
+        button.textContent = 'Brief Overview';
         button.setAttribute('aria-label', `Open quick rules for ${game.game_name || 'this game'}`);
         button.addEventListener('click', () => openRulesDialog(game));
         td.appendChild(button);
