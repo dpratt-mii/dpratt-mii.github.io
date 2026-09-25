@@ -444,6 +444,7 @@
 <div id="userLookupMenu" hidden>
   <button id="userLookupMenuButton" type="button">User Lookup</button>
   <button id="hideThumbnailsMenuButton" type="button">Hide Thumbnails</button>
+
   <div class="menu-group">
     <button id="rulesSubmenuButton" type="button" aria-expanded="false">Rules ▸</button>
     <div id="rulesSubmenu" class="sub-menu" hidden>
@@ -899,8 +900,11 @@ function setupUserLookupMenu() {
     rulesButton.setAttribute('aria-expanded', 'false');
   }
 
+  const hideThumbnailsButton = document.getElementById('hideThumbnailsMenuButton');
+
   title.addEventListener('contextmenu', event => {
     event.preventDefault();
+    hideThumbnailsButton.textContent = thumbnailEnabled ? 'Hide Thumbnails' : 'Show Thumbnails';
     menu.hidden = false;
     rulesMenu.hidden = true;
     rulesButton.setAttribute('aria-expanded', 'false');
@@ -912,9 +916,9 @@ function setupUserLookupMenu() {
     closeAllMenus();
     openUserLookup();
   });
-  document.getElementById('hideThumbnailsMenuButton').addEventListener('click', () => {
+  hideThumbnailsButton.addEventListener('click', () => {
     closeAllMenus();
-    changeThumbnail(false);
+    changeThumbnail(!thumbnailEnabled);
   });
   rulesButton.addEventListener('click', event => {
     event.stopPropagation();
