@@ -296,6 +296,7 @@ DOCTYPE html>
   .prompt-status.error { color: #b00020; }
   #promptOutput { width: 100%; min-height: 220px; box-sizing: border-box; padding: 10px; border: 1px solid #aab4bf; border-radius: 4px; font: 13px/1.4 Consolas, monospace; resize: vertical; }
   .rules-cell { text-align: center !important; vertical-align: middle !important; }
+  .rules-prompt-button { display: block; margin: 6px auto 0; }
   .rules-button { padding: 7px 10px; border: 1px solid #2867a8; border-radius: 4px; color: #fff; background: #2867a8; font-weight: 700; cursor: pointer; white-space: normal; }
   .rules-button:hover, .rules-button:focus, .dialog-rules-button:hover, .dialog-rules-button:focus { background: #174d82; }
   .rules-button.rules-button-pdf { color: #b30b00; border-color: #b30b00; background: #fff; }
@@ -2127,6 +2128,18 @@ function buildRows(games) {
         button.setAttribute('aria-label', `Open quick rules for ${game.game_name || 'this game'}`);
         button.addEventListener('click', () => openRulesDialog(game));
         td.appendChild(button);
+        if (!quickRulesFile) {
+          const promptButton = document.createElement('button');
+          promptButton.className = 'rules-button rules-prompt-button';
+          promptButton.type = 'button';
+          promptButton.textContent = 'Generate Prompt';
+          promptButton.setAttribute('aria-label', `Generate quick reference prompt for ${game.game_name || 'this game'}`);
+          promptButton.addEventListener('click', event => {
+            event.stopPropagation();
+            openRulesPromptGenerator(game);
+          });
+          td.appendChild(promptButton);
+        }
       } else if (col.field && game[col.field] !== undefined && game[col.field] !== null) {
         const value = game[col.field];
         if (col.field === THUMBNAIL_COLUMN.field) {
