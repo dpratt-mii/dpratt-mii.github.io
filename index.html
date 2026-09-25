@@ -256,7 +256,9 @@
   }
   .game-geek-rating-label { color: #ddd; font-size: 13px; font-weight: 700; }
   .game-geek-rating-value { color: #fff; font-size: 16px; }
+  .game-title-details { min-width: 0; }
   .game-title-row h2 { margin: 0; color: #fff; font-size: clamp(24px, 3vw, 38px); line-height: 1.15; }
+  .game-bgg-id { margin: 6px 0 0; color: #d5dce5; font-size: 14px; font-weight: 700; }
   .game-year { margin: 12px 0 12px 110px; font-size: 26px; font-weight: 700; }
   .game-description { margin: 0 0 28px 110px; font-size: 23px; line-height: 1.35; }
   .game-stats {
@@ -480,7 +482,10 @@
           <div class="game-geek-rating-label">Geek Rating</div>
           <div class="game-geek-rating-value" id="dialogGeekRating">N/A</div>
         </div>
-        <h2 id="dialogGameTitle"></h2>
+        <div class="game-title-details">
+          <h2 id="dialogGameTitle"></h2>
+          <div class="game-bgg-id" id="dialogBggId"></div>
+        </div>
       </div>
       <div class="game-year" id="dialogYear"></div>
       <p class="game-description" id="dialogDescription"></p>
@@ -1348,6 +1353,7 @@ function openGameDialog(game) {
   cover.onerror = () => { cover.hidden = true; };
 
   setDialogText('dialogGameTitle', game.game_name, 'Untitled game');
+  setDialogText('dialogBggId', game.bgg_id ? `BGG ID: ${game.bgg_id}` : '', '');
   setDialogText('dialogYear', game.year_published ? '(' + game.year_published + ')' : '');
   setDialogText('dialogOverallRank', formatNumber(game['boardgames_ranks.rank']));
   setDialogText('dialogFamilyRank', formatNumber(game['boardgames_ranks.familygames_rank']));
