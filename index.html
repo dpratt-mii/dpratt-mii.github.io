@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -279,6 +279,22 @@
   .game-dialog-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
   .dialog-play-button, .dialog-rules-button { padding: 10px 18px; border: 0; border-radius: 6px; font-size: 18px; font-weight: 700; cursor: pointer; }
   .dialog-rules-button { color: #fff; background: #2867a8; }
+  #promptDialog { width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 0; color: #17324b; background: #fff; box-shadow: 0 24px 80px rgba(0, 0, 0, .45); }
+  #promptDialog::backdrop { background: rgba(1, 1, 6, .7); }
+  .prompt-shell { position: relative; display: flex; flex-direction: column; gap: 14px; max-height: calc(100vh - 32px); box-sizing: border-box; padding: 24px; overflow-y: auto; }
+  .prompt-shell h2 { margin: 0; padding-right: 36px; font-size: 22px; }
+  .prompt-close { position: absolute; top: 8px; right: 12px; border: 0; color: #333; background: transparent; font-size: 30px; line-height: 1; cursor: pointer; }
+  .prompt-steps { margin: 0; padding-left: 22px; line-height: 1.5; }
+  .prompt-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .prompt-row input { flex: 1 1 320px; padding: 8px 10px; border: 1px solid #aab4bf; border-radius: 4px; font-size: 14px; }
+  .prompt-button { padding: 8px 14px; border: 1px solid #2867a8; border-radius: 4px; color: #fff; background: #2867a8; font-weight: 700; cursor: pointer; }
+  .prompt-button.secondary { color: #2867a8; background: #fff; }
+  .prompt-confirm { padding: 12px 14px; border-left: 4px solid #e6b53d; background: #fff7d9; }
+  .prompt-confirm[hidden] { display: none; }
+  .prompt-confirm p { margin: 0 0 10px; font-weight: 700; word-break: break-all; }
+  .prompt-status { min-height: 20px; margin: 0; color: #2d6a4f; font-weight: 700; }
+  .prompt-status.error { color: #b00020; }
+  #promptOutput { width: 100%; min-height: 220px; box-sizing: border-box; padding: 10px; border: 1px solid #aab4bf; border-radius: 4px; font: 13px/1.4 Consolas, monospace; resize: vertical; }
   .rules-cell { text-align: center !important; vertical-align: middle !important; }
   .rules-button { padding: 7px 10px; border: 1px solid #2867a8; border-radius: 4px; color: #fff; background: #2867a8; font-weight: 700; cursor: pointer; white-space: normal; }
   .rules-button:hover, .rules-button:focus, .dialog-rules-button:hover, .dialog-rules-button:focus { background: #174d82; }
@@ -505,6 +521,7 @@
       </div>
       <div class="game-dialog-actions">
         <button class="dialog-rules-button" type="button" id="dialogRulesButton">Quick Rules</button>
+        <button class="dialog-rules-button" type="button" id="dialogPromptButton">Generate Rules Prompt</button>
       </div>
     </div>
   </div>
@@ -518,6 +535,35 @@
       <div class="rules-color-strip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
     </div>
     <div class="rules-dialog-content" id="rulesDialogContent"></div>
+  </div>
+</dialog>
+<dialog id="promptDialog" aria-labelledby="promptDialogTitle">
+  <div class="prompt-shell">
+    <button class="prompt-close" id="promptDialogClose" type="button" aria-label="Close prompt generator">&times;</button>
+    <h2 id="promptDialogTitle">Quick Reference Prompt</h2>
+    <ol class="prompt-steps">
+      <li>The game name has been copied. Paste it (Ctrl+V) into the <strong>Search for a board game</strong> box in the rule-book.org window.</li>
+      <li>Select the matching game. When the address ends in <strong>/pdf</strong>, copy the address bar URL and return here.</li>
+    </ol>
+    <div class="prompt-row">
+      <button class="prompt-button secondary" id="promptReopenSearch" type="button">Reopen rule-book.org</button>
+      <button class="prompt-button secondary" id="promptCopyName" type="button">Copy Game Name</button>
+    </div>
+    <div class="prompt-row">
+      <input id="promptRuleUrl" type="url" placeholder="https://rule-book.org/.../pdf" aria-label="Rule URL">
+    </div>
+    <div class="prompt-confirm" id="promptConfirm" hidden>
+      <p id="promptConfirmText"></p>
+      <div class="prompt-row">
+        <button class="prompt-button" id="promptConfirmYes" type="button">Yes</button>
+        <button class="prompt-button secondary" id="promptConfirmCancel" type="button">Cancel</button>
+      </div>
+    </div>
+    <p class="prompt-status" id="promptStatus" role="status"></p>
+    <textarea id="promptOutput" readonly aria-label="Generated prompt"></textarea>
+    <div class="prompt-row">
+      <button class="prompt-button" id="promptCopy" type="button" disabled>Copy Prompt</button>
+    </div>
   </div>
 </dialog>
 <dialog id="userLookupDialog" aria-labelledby="userLookupTitle">
@@ -1323,7 +1369,7 @@ const LOCAL_THUMBNAIL_OVERRIDES = {
   "Unlock!: Mystery Adventures – The Nautilus' Traps": 'Unlock! Nautilus.webp',
   'Unstable Unicorns': 'unstable unicorns.webp',
   'Space Escape': 'spaceescape.webp',
-  // The remaining overrides below have no matching webp in thumbnails/, so they fall
+  // The remaining overrides below have no matching webp in images/thumbnails/, so they fall
   // back to the thumbnail link recorded in collectiondetails2026.csv (image already cached locally).
   '5-Minute Dungeon': 'pic9630053.jpg',
   'Acquire': 'pic8483227.jpg',
@@ -1354,11 +1400,11 @@ const LOCAL_THUMBNAIL_OVERRIDES = {
 
 function getLocalThumbnailUrl(value, gameName = '') {
   const override = LOCAL_THUMBNAIL_OVERRIDES[gameName];
-  if (override) return `thumbnails/${encodeURIComponent(override)}`;
+  if (override) return `images/thumbnails/${encodeURIComponent(override)}`;
   if (!value) return '';
   try {
     const filename = new URL(value, window.location.href).pathname.split('/').pop();
-    return filename ? `thumbnails/${encodeURIComponent(filename)}` : '';
+    return filename ? `images/thumbnails/${encodeURIComponent(filename)}` : '';
   } catch {
     return '';
   }
@@ -1613,6 +1659,444 @@ document.getElementById('rulesDialogClose').addEventListener('click', closeRules
 document.getElementById('dialogRulesButton').addEventListener('click', () => {
   if (selectedGame) openRulesDialog(selectedGame);
 });
+
+const RULES_PROMPT_TEMPLATE = `Create a two-page landscape Quick Reference Guide PDF for [GAME NAME], which has a bggid of [BGGID], and use the rules at [Rule URL].
+The guide is specifically intended to be printed front and back on a single sheet of paper. The design should prioritize readability, table use, large setup visuals, and fast gameplay reference over maximum content density.
+The completed guide should resemble a premium BoardGameGeek-style player aid that allows players to learn setup, understand gameplay flow, and quickly reference rules during play without consulting the full rulebook.
+
+Overall Document Layout
+Page 1 (Front)
+Focus on learning and setup:
+
+1. Game Overview
+2. Setup Chronology
+3. Structure of a Round
+4. Large Setup Image / Diagram
+
+The setup image should be a dominant visual element and substantially larger than would fit in a one-page layout.
+
+Page 2 (Back)
+Focus on gameplay reference:
+
+1. Key Mechanics / Rules Refresher
+2. Scoring Summary
+3. Strategic Tips
+4. End of Game
+
+This page should function as the primary reference during gameplay.
+
+Typography Requirements
+Readability First
+This guide is intended for tabletop use and must prioritize readability over content density.
+Font Sizes
+
+- Rules and body text: 9 pt minimum
+- Preferred body text: 9.5–10.5 pt
+- Section headings: 12–18 pt
+- Major titles: 15–22 pt
+
+Non-Negotiable Rule
+Never reduce rules text below 9 pt.
+Preferred Sizing
+Whenever space permits:
+
+- Rules text: 9.5–10.5 pt
+- Setup instructions: 9.5–10.5 pt
+- Scoring summaries: 9.5–10.5 pt
+- Strategy tips: 9.5–10.5 pt
+
+Readability Priority Rule
+Readability takes priority over completeness.
+If content cannot fit while maintaining 9 pt text:
+
+1. Simplify wording.
+2. Remove redundant explanations.
+3. Reduce decorative graphics.
+4. Resize nonessential images.
+5. Reflow content.
+6. Expand panel sizing.
+7. Condense examples.
+
+Never solve an overflow problem by reducing body text below 9 pt.
+
+Panel and Frame Requirements
+All content must reside within clearly defined panels.
+Required Internal Padding
+Maintain:
+
+- Left padding: 0.18" minimum
+- Right padding: 0.18" minimum
+- Bottom padding: 0.18" minimum
+- Header-to-content spacing: 0.12" minimum
+- Preferred internal padding: 0.20–0.25"
+
+Text must never:
+
+- Touch panel borders
+- Cross panel borders
+- Extend outside panels
+- Extend outside page boundaries
+- Start beneath colored section headers
+- Overlap images
+- Overlap captions
+- Overlap neighboring sections
+- Appear clipped or partially hidden
+
+Section Header Requirements
+Section headers and section content must be treated as separate layout regions.
+Requirements:
+
+- Header text vertically centered in header bar
+- Body text begins below header bar
+- Minimum 0.12" separation below header bar
+- Body text may never overlap header bars
+- Wrapped header titles must be fully accounted for before body text begins
+
+Bullet and Paragraph Formatting
+
+- Use hanging indents for bullets
+- Maintain consistent bullet spacing
+- Align wrapped lines beneath text, not beneath bullet icons
+- Prevent isolated bullets or orphaned lines
+- Keep bullets fully inside panel boundaries
+- Maintain comfortable paragraph spacing
+
+Page 1 Requirements
+
+1. Game Overview
+Include:
+
+- Objective
+- Player count
+- Average play time
+- Complexity level (optional)
+- Concise explanation of how the game is won
+
+1. Setup Chronology
+Present setup as an ordered sequence.
+Include:
+
+- Numbered setup steps
+- Lettered callouts (A-H as needed)
+- Matching component legend
+- Important setup reminders
+
+The setup should be understandable from this page alone.
+
+1. Structure of a Round
+Describe gameplay flow chronologically.
+Format:
+Phase 1
+Description
+
+↓
+
+Phase 2
+Description
+
+↓
+
+Phase 3
+Description
+
+Continue until a complete round is described.
+Use arrows, flow indicators, and clearly separated phases.
+2. Setup Image / Diagram
+The setup image is one of the highest-priority elements of the guide.
+Requirements:
+
+- Large and easily readable
+- Positioned prominently
+- Uses supplied setup image when available
+- Includes callouts and labels when appropriate
+- Caption remains inside image frame
+- Image remains undistorted
+- Preserve original aspect ratio
+
+If no setup image is supplied:
+
+- Generate a setup diagram from the rulebook
+- Use a clear top-down perspective
+- Label major components
+
+Page 2 Requirements
+
+1. Key Mechanics / Rules Refresher
+Summarize:
+
+- Core gameplay rules
+- Placement restrictions
+- Resource limitations
+- Action limitations
+- Special abilities
+- Frequently forgotten rules
+
+Focus on information players commonly reference.
+
+1. Scoring Summary
+Include:
+During Game
+
+- Scoring opportunities
+- Bonuses
+- Penalties
+
+End Game
+
+- Scoring categories
+- Bonus scoring
+- Tiebreakers
+
+Use bullets and icons when appropriate.
+
+1. Strategic Tips
+Provide 5–10 concise strategy reminders.
+Organize into:
+✅ Good Habits
+Helpful recurring decisions.
+⚠ Common Mistakes
+Common errors made by new players.
+🎯 Competitive Tips
+Advanced strategic considerations.
+2. End of Game
+Summarize:
+
+- End-game trigger
+- Final scoring process
+- Tie resolution
+- Winning condition
+
+Limit to concise bullet points.
+
+Visual Design Requirements
+Use:
+
+- Thematic colors matching game artwork
+- Section icons
+- Clean visual hierarchy
+- Rounded panels/cards
+- Consistent typography
+- Balanced whitespace
+
+Design goals:
+
+- Favor readability over density
+- Favor larger text over decorative elements
+- Favor quick scanning over lengthy explanations
+- Favor white space over crowded layouts
+
+Mandatory Layout Validation
+Render each page and inspect it visually before final delivery.
+Verify every panel individually.
+Validate
+
+1. No text overflow or clipping
+2. - All text remains inside assigned frames.
+- No text crosses boundaries.
+- No clipped lines.
+- No hidden text.
+3. Improved body-text spacing and wrapping
+4. - Wrapped lines remain within margins.
+- Hanging indents are correct.
+- Paragraphs have comfortable spacing.
+- No crowded blocks of text.
+5. Setup image preserved without distortion
+6. - Original aspect ratio maintained.
+- No stretching.
+- No squashing.
+- Callouts remain readable.
+7. Consistent margins and panel alignment
+8. - Consistent outer margins.
+- Consistent internal padding.
+- Uniform spacing between panels.
+- Proper column alignment.
+9. Clickable rulebook link included
+10. - Include a clickable hyperlink to the official rulebook.
+- Place the link in a dedicated footer or reference area.
+- Verify the hyperlink functions inside the PDF.
+11. Successful 220-DPI render
+12. - Render both pages at a minimum of 220 DPI.
+- Verify text readability.
+- Verify image clarity.
+- Verify setup image legibility.
+13. PDF preflight passed on both pages
+14. - Fonts embedded.
+- Hyperlinks functional.
+- Images load correctly.
+- No missing assets.
+- No panel overflow.
+- No clipping.
+- No header/body collisions.
+- No content outside printable area.
+
+Quality-Control Loop
+If any validation check fails:
+
+1. Stop.
+2. Correct the layout issue.
+3. Re-render both pages.
+4. Re-run validation.
+5. Repeat until all checks pass.
+
+Do not deliver a PDF that contains:
+
+- Overflow
+- Clipping
+- Cropped text
+- Crowded panels
+- Border violations
+- Distorted setup images
+- Broken links
+- Failed renders
+- Failed preflight checks
+
+Output Deliverables
+Generate:
+
+1. Two-page landscape PDF
+2. Front-and-back printable layout
+3. Large setup image on Page 1
+4. Rules-focused reference page on Page 2
+5. Rules text at least 9 pt
+6. Consistent panel spacing and alignment
+7. Clickable rulebook link
+8. 220-DPI verified render
+9. PDF preflight-validated output
+10. Final visually inspected, print-ready document
+
+Output Filename Requirements
+- Name the PDF using the game title.
+- Include the BoardGameGeek ID (BGGID) in the filename enclosed in parentheses.
+- Format: Game Name (BGGID).pdf
+- Preserve any user-specified filename text, but still append the BGGID in parentheses before .pdf
+- The BGGID must appear exactly as provided by the user.
+
+Then generate the complete two-page front-and-back Quick Reference Guide.`;
+
+const RULE_BOOK_URL = 'https://rule-book.org/';
+const promptState = { game: null, candidateUrl: '', ruleUrl: '' };
+
+function generateRulesPrompt(gameName, bggId, ruleUrl) {
+  return RULES_PROMPT_TEMPLATE
+    .replaceAll('[GAME NAME]', gameName)
+    .replaceAll('[BGGID]', bggId)
+    .replaceAll('[Rule URL]', ruleUrl);
+}
+
+function isRuleBookPdfUrl(value) {
+  try {
+    const url = new URL(String(value).trim());
+    return url.protocol === 'https:' && url.hostname === 'rule-book.org' && /\/pdf\/?$/.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Clipboard API is unavailable in some file:// or non-focused contexts.
+    const helper = document.createElement('textarea');
+    helper.value = text;
+    helper.style.position = 'fixed';
+    helper.style.opacity = '0';
+    document.body.appendChild(helper);
+    helper.select();
+    const copied = document.execCommand('copy');
+    helper.remove();
+    return copied;
+  }
+}
+
+function setPromptStatus(message, isError = false) {
+  const status = document.getElementById('promptStatus');
+  status.textContent = message;
+  status.classList.toggle('error', isError);
+}
+
+function updatePromptOutput() {
+  const game = promptState.game;
+  const prompt = generateRulesPrompt(game.game_name || '', String(game.bgg_id ?? ''), promptState.ruleUrl || '[Rule URL]');
+  document.getElementById('promptOutput').value = prompt;
+  document.getElementById('promptCopy').disabled = !promptState.ruleUrl;
+  return prompt;
+}
+
+function openRuleBookSearch() {
+  window.open(RULE_BOOK_URL, '_blank', 'popup,width=1100,height=820,noopener,noreferrer');
+}
+
+function offerRuleUrl(value) {
+  const url = String(value || '').trim();
+  if (!isRuleBookPdfUrl(url) || url === promptState.ruleUrl) return;
+  promptState.candidateUrl = url;
+  document.getElementById('promptRuleUrl').value = url;
+  document.getElementById('promptConfirmText').textContent = `Use this as the rules basis? ${url}`;
+  document.getElementById('promptConfirm').hidden = false;
+}
+
+async function openRulesPromptGenerator(game) {
+  promptState.game = game;
+  promptState.candidateUrl = '';
+  promptState.ruleUrl = '';
+  document.getElementById('promptDialogTitle').textContent = `Quick Reference Prompt \u2014 ${game.game_name || 'Game'}`;
+  document.getElementById('promptRuleUrl').value = '';
+  document.getElementById('promptConfirm').hidden = true;
+  updatePromptOutput();
+  document.getElementById('promptDialog').showModal();
+  const copied = await copyText(game.game_name || '');
+  openRuleBookSearch();
+  setPromptStatus(copied ? 'Game name copied. Paste it into the rule-book.org search box.' : 'Unable to copy the game name automatically; use Copy Game Name.', !copied);
+}
+
+async function checkClipboardForRuleUrl() {
+  const dialog = document.getElementById('promptDialog');
+  if (!dialog.open || !navigator.clipboard?.readText) return;
+  try {
+    offerRuleUrl(await navigator.clipboard.readText());
+  } catch {
+    // Clipboard read permission denied; the user can paste into the Rule URL field.
+  }
+}
+
+document.getElementById('dialogPromptButton').addEventListener('click', () => {
+  if (selectedGame) openRulesPromptGenerator(selectedGame);
+});
+document.getElementById('promptDialogClose').addEventListener('click', () => {
+  document.getElementById('promptDialog').close();
+});
+document.getElementById('promptReopenSearch').addEventListener('click', openRuleBookSearch);
+document.getElementById('promptCopyName').addEventListener('click', async () => {
+  const copied = await copyText(promptState.game?.game_name || '');
+  setPromptStatus(copied ? 'Game name copied.' : 'Unable to copy the game name.', !copied);
+});
+document.getElementById('promptRuleUrl').addEventListener('input', event => {
+  const value = event.target.value.trim();
+  if (isRuleBookPdfUrl(value)) {
+    offerRuleUrl(value);
+  } else if (value) {
+    setPromptStatus('Enter a rule-book.org address that ends in /pdf.', true);
+  }
+});
+document.getElementById('promptConfirmYes').addEventListener('click', async () => {
+  promptState.ruleUrl = promptState.candidateUrl;
+  document.getElementById('promptConfirm').hidden = true;
+  updatePromptOutput();
+  const copied = await copyText(promptState.ruleUrl);
+  setPromptStatus(copied ? 'Rule URL copied and added to the prompt.' : 'Rule URL added to the prompt, but it could not be copied.', !copied);
+});
+document.getElementById('promptConfirmCancel').addEventListener('click', () => {
+  promptState.candidateUrl = '';
+  document.getElementById('promptConfirm').hidden = true;
+  setPromptStatus('Select another rulebook and copy its /pdf address.');
+});
+document.getElementById('promptCopy').addEventListener('click', async () => {
+  const copied = await copyText(updatePromptOutput());
+  setPromptStatus(copied ? 'Prompt copied to the clipboard.' : 'Unable to copy the prompt; select the text and copy it manually.', !copied);
+});
+window.addEventListener('focus', checkClipboardForRuleUrl);
 document.getElementById('dialogPlayButton').addEventListener('click', () => {
   if (!selectedGame) return;
   selectedGame.numplays = (selectedGame.numplays || 0) + 1;
