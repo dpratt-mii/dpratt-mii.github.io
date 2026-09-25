@@ -282,6 +282,8 @@
   .rules-cell { text-align: center !important; vertical-align: middle !important; }
   .rules-button { padding: 7px 10px; border: 1px solid #2867a8; border-radius: 4px; color: #fff; background: #2867a8; font-weight: 700; cursor: pointer; white-space: normal; }
   .rules-button:hover, .rules-button:focus, .dialog-rules-button:hover, .dialog-rules-button:focus { background: #174d82; }
+  .rules-button.rules-button-pdf { color: #b30b00; border-color: #b30b00; background: #fff; }
+  .rules-button.rules-button-pdf:hover, .rules-button.rules-button-pdf:focus { background: #ffece9; }
   #rulesDialog {
     width: min(1180px, calc(100vw - 32px));
     max-width: 1180px;
@@ -610,8 +612,24 @@ const ADDITIONAL_COLUMNS = [];
 const THUMBNAIL_COLUMN = { header: '', field: 'boardgame.thumbnail' };
 const RULES_COLUMN = { header: 'Quick Rules', type: 'rules' };
 const QUICK_RULES_FILES = [
-  'Sagrada_Quick_Reference_Guide_Clean-199561.pdf'
+  'Acquire_Quick_Reference_Guide-5.pdf',
+  'Quacks_of_Quedlinburg_Quick_Reference_Guide-269259.pdf',
+  '7_Wonders_Duel_Quick_Reference_Guide-173346.pdf',
+  'My_City_Quick_Reference_Guide-295486.pdf',
+  '7_Wonders_Quick_Reference_Guide-68448.pdf',
+  'Adventure_Games_Monochrome_Inc_Quick_Reference_Guide-267814.pdf',
+  'Sagrada_Quick_Reference_Guide-199561.pdf',
+  'Adventure_Land_Quick_Reference_Guide-183231.pdf',
+  'Wingspan_Quick_Reference_Guide-266192.pdf',
+  'Above_and_Below_Quick_Reference_Guide-172818.pdf'
 ];
+
+function findQuickRulesFile(game) {
+  const bggId = String(game['boardgame.bg_id'] || game.objectid || '').trim();
+  if (!bggId) return '';
+  const suffix = new RegExp(`-${bggId}\\.pdf$`, 'i');
+  return QUICK_RULES_FILES.find(filename => suffix.test(filename)) || '';
+}
 const VALUE3_FIELD = 'boardgame.average';
 const RANK_ID_FIELD = 'boardgames_ranks.id';
 
@@ -1457,8 +1475,7 @@ function addSetupVisual(container, game) {
 function openRulesDialog(game) {
   const dialog = document.getElementById('rulesDialog');
   const content = document.getElementById('rulesDialogContent');
-  const bggId = String(game['boardgame.bg_id'] || game.objectid || '').trim();
-  const quickRulesFile = QUICK_RULES_FILES.find(filename => bggId && filename.includes(bggId));
+  const quickRulesFile = findQuickRulesFile(game);
   const players = game.min_players !== null && game.max_players !== null
     ? game.min_players === game.max_players ? String(game.min_players) : `${game.min_players}-${game.max_players}`
     : 'See rulebook';
@@ -1619,9 +1636,10 @@ function buildRows(games) {
       if (col.type === 'rules') {
         td.className = 'rules-cell';
         const button = document.createElement('button');
-        button.className = 'rules-button';
+        const quickRulesFile = findQuickRulesFile(game);
+        button.className = quickRulesFile ? 'rules-button rules-button-pdf' : 'rules-button';
         button.type = 'button';
-        button.textContent = 'Brief Overview';
+        button.textContent = quickRulesFile ? 'Quick Rules PDF' : 'Brief Overview';
         button.setAttribute('aria-label', `Open quick rules for ${game.game_name || 'this game'}`);
         button.addEventListener('click', () => openRulesDialog(game));
         td.appendChild(button);
